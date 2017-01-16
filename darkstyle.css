@@ -1,30 +1,30 @@
 /* Desktop CSS */
 
 body {
-    background-color: #2A2A2A;
+    background-color: #24252A;
 }
 
 
 .wrapper {
 	width: 100%;
 	height: 100%;
+	z-index: 1;
 }
 
 .sideMenu {
-	background-color: #222222;
+	background-color: #201E23;
 	border-left: thin solid #5F5F5F;
 	border-right: thin solid #5F5F5F;
 	text-align: center;
 	font-family: 'Muli', sans-serif;
 	font-size: 25px;
 	width: 250px;
-	height: 100vh;
+	height: 110vh;
 	top: 0px; 
 	margin-top: -10px;
-	margin-left: 20px;
+	margin-left: 10px;
 	overflow: hidden;
 	position: fixed;
-	float: left;
 	z-index: 10;
 }
 
@@ -60,7 +60,7 @@ body {
 }
 
 .scalableContactInfo:hover {
-	transform: scale(1.3);
+	transform: scale(1.2);
 }
 
 
@@ -74,18 +74,43 @@ body {
 	display: none;
 }
 
-#phoneNumber {
+#discord {
 	margin-top: 30px;
 	display: none;
 }
 
+.URL {
+	color: #3175FF;
+}
+
 .content {
 	margin-top: 10px;
-	margin-left: 280px;
-	position: absolute;
+	margin-left: 290px;
+	position: fixed;
 	width: 100%;
 	height: 100%;
-	background-color: darkgray;
+	font-family: 'Muli', sans-serif;
+}
+
+.contentGrid {
+	position: relative;
+	border: thin ridge;
+	width: 1000px;
+	height: 735px;
+}
+
+.contentGridItem {
+	width: 300px;
+	height: 350px;
+	border: thin ridge;
+	border-color: #606060;
+	float: left;
+	margin-right: 30px;
+	margin-bottom: 30px;
+}
+
+.footer {
+	clear: both;
 }
 
 hr { 
