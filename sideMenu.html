@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<body>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="darkstyle.css">
+</head>
+
+<div class="sideMenu">
+	<p>Robert Knoester</p>
+	<div class="profilePicture">
+		<img src="http://www.lesavatars.com/Smile/Naruto/225.jpg"/>
+	</div>
+	<div class="sideMenuInfo">
+		<p><b>General</b></p>
+		<p>Game / software programmer</p>
+		<p>The Netherlands <img src="images/flag_nl.png"> </p> 
+		<p>24 years old (1992)</p>
+		<br>
+		<p><b>Contact</b></p>
+		<div class="sideMenuInfoContact">
+			<div id="gmailIcon" class="scalableContactInfo">
+				<img src="images/bigicon_gmail.png" onClick="ToggleElement('email')">
+			</div>
+
+			<div id="discordIcon" class="scalableContactInfo">
+				<img src="images/bigicon_discord.png" onClick="ToggleElement('discord')">
+			</div>
+			<div id="skypeIcon" class="scalableContactInfo">
+				<img src="images/bigicon_skype.png" onClick="ToggleElement('skype')">
+			</div>
+			<div name="contactInfo" id="email">
+				<p>Email:</p>
+				<p>robert.knoester92@gmail.com</p>
+			</div>
+			<div name="contactInfo" id="skype">
+				<p>Skype:</p>
+				<p>robert.knoester92</p>
+			</div>
+			<div name="contactInfo" id="discord">
+				<p>Discord:</p>
+				<p>Robert#3482</p>
+			</div>
+		</div>
+		<div class="sideMenuInfoEducation">
+			<p><b>Education</b></p>
+			<p>NHTV Breda (IGAD) University</p>
+			<p>of Applied Sciences</p>
+			<a id="nhtvURL" class="URL" href="https://www.nhtv.nl/ENG.html" target="_blank">NHTV Website</a>
+		</div>
+		<br>
+	</div>
+</div>
+
+<script>
+	function ToggleElement(id) 
+	{
+		var element = document.getElementById(id);
+		var state = element.style.display;
+		
+		var infos = document.getElementsByName("contactInfo");
+		for(var i = 0; i < infos.length; i++)
+		{
+			infos[i].style.display = "none";
+		}
+
+		if(state == "block") 
+		{
+			element.style.display = "none";
+		}
+		else 
+		{
+			element.style.display = "block";
+		}
+	}
+</script>
+</body>
+</html>
