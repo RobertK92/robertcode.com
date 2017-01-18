@@ -3,7 +3,7 @@
 body {
     background-color: #24252A;
 	overflow-y: scroll;
-	overflow-x: hidden;
+	overflow-x: scroll;
 }
 
 
@@ -102,17 +102,34 @@ body {
 .contentGridItem {
 	width: 300px;
 	height: 350px;
-	border: thin ridge;
+	border: thin solid;
+	border-width: 2px;
 	border-color: #606060;
 	float: left;
 	margin-right: 30px;
 	margin-left: 30px;
 	margin-bottom: 30px;
+	transition: all 200ms ease-in-out;
 }
+
+.contentGridItem:hover{
+	transform: scale(1.1);
+	cursor: pointer;
+}
+
+#contentItemQEWL {
+	background-image: url(images/qewl_background.png);
+}
+
 
 .contentGridItemTitle {
 	text-align: center;
 	font-size: 20px;
+}
+
+.checkListItem {
+	margin-bottom: 3px;
+	
 }
 
 .archives {
@@ -125,6 +142,11 @@ body {
 	font-size: 12px;
 }
 
+ul {
+	list-style-image: url(images/icon_checked.png);
+	color: #D0D0D0;
+}
+
 hr { 
     display: block;
     border-style: dotted;
@@ -133,7 +155,6 @@ hr {
 }
 
 h1 {
-	
     color: white;
     text-align: center;
 	text-shadow: 1px 1px grey;
