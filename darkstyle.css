@@ -3,7 +3,7 @@
 body {
     background-color: #24252A;
 	overflow-y: scroll;
-	overflow-x: scroll;
+	overflow-x: hidden;
 }
 
 
@@ -11,6 +11,7 @@ body {
 	width: 100%;
 	height: 100%;
 	z-index: 1;
+	
 }
 
 .sideMenu {
@@ -140,6 +141,21 @@ body {
 	text-align: center;
 	margin-top: -20px;
 	font-size: 12px;
+}
+
+.skillProgress {
+	width: 250px;
+	height: 10px;
+}
+
+progress {
+	border-radius: 9px;
+	background-color: #909090;
+	
+}
+
+#cSharpProgress {	
+	
 }
 
 ul {
