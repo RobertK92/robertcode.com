@@ -6,41 +6,44 @@ body {
 	overflow-x: hidden;
 }
 
-
 .wrapper {
 	width: 100%;
 	height: 100%;
 	z-index: 1;
-	
 }
 
 .sideMenu {
 	background-color: #201E23;
 	border-left: thin solid #5F5F5F;
 	border-right: thin solid #5F5F5F;
+	border-bottom: thin solid #5F5F5F;
 	text-align: center;
 	font-family: 'Muli', sans-serif;
 	font-size: 25px;
 	width: 250px;
-	height: 110vh;
+	height: 1700px;
 	top: 0px; 
 	margin-top: -10px;
 	margin-left: 10px;
 	overflow: hidden;
-	position: fixed;
+	float:left;
 	z-index: 10;
 }
 
 .profilePicture {
-	max-height: 250px;
-	max-width: 200px;
+	border: thin solid #5A5A5A;
+	border-width: 2px;
+	height: 230px;
+	width: 200px;
 	margin-left: 25px;
+	margin-bottom: 20px;
 	overflow: hidden;
 }
 
 
 .sideMenuInfoEducation {
-	margin-top: 50px;	
+	margin-top: 50px;
+	margin-bottom: 400px;
 }
 
 .sideMenuInfo {
@@ -88,15 +91,16 @@ body {
 
 .content {
 	margin-top: 10px;
-	margin-left: 290px;
+	margin-left: 100px;
 	width: 100%;
 	height: 100%;
 	font-family: 'Muli', sans-serif;
 }
 
 .contentGrid {
-	position: relative;
-	width: 1100px;
+	position: absolute;
+	margin-left: 170px;
+	width: 1000px;
 	height: 100%;
 }
 
@@ -107,8 +111,8 @@ body {
 	border-width: 2px;
 	border-color: #606060;
 	float: left;
-	margin-right: 30px;
-	margin-left: 30px;
+	margin-right: 0px;
+	margin-left: 10px;
 	margin-bottom: 30px;
 	transition: all 200ms ease-in-out;
 }
@@ -143,19 +147,202 @@ body {
 	font-size: 12px;
 }
 
-.skillProgress {
-	width: 250px;
-	height: 10px;
+#skillBars {
+	display: none;
 }
 
-progress {
-	border-radius: 9px;
-	background-color: #909090;
+.skillsButton {
+	width: 80%;
+	height: 50px;
+	background-color: #4F4F4F;
+	border-color: #2F2F2F;
+}
+
+.skillsButton:hover {
+	cursor: pointer;
+	background-color: #626262;
+}
+
+#showSkillsButtonText {
+	color: #D8D8D8;
+}
+
+.skillBar {
+	width: 220px;
+	height: 17px;
+	text-align: center;
+	text-underline-position: right;
+	text-shadow: 1px 1px black;
+	background-color: #6B6B6B;
+	color:aqua;
+	margin-top: -9px;
+	border-right: thin solid #C5C5C5;
+}
+
+.skillBarBg {
+	width: 220px;
+	height: 17px;
+	background-color: #464646;
 	
 }
 
-#cSharpProgress {	
+.skillBarText {
+	font-size: 12px;
 	
+	height: 100%;
+	transform: translateY(1.2px);
+}
+
+.skillsWrapper {
+	display: inline-block;
+	margin-left: 15px;
+	margin-right: 20px;
+}
+
+#skillBarEndHr {
+	position: relative;
+	width: 1080px;
+}
+
+/* Programming */
+
+.skillBarsProgramming {
+	margin-bottom: 20px;	
+}
+
+#skillBarCS {	
+	width: 95%;
+	background-color: #33537F;
+}
+
+#skillBarCSUnity {
+	width: 95%;
+	background-color: #33537F;
+}
+
+#skillBarCSUnityEditor {
+	width: 95%;
+	background-color: #33537F;
+}
+
+#skillBarXNA {
+	width: 95%;
+	background-color: #33537F;
+}
+
+#skillBarSFML {
+	width: 95%;
+	background-color: #33537F;
+}
+
+#skillBarCpp {	
+	width: 85%;
+	background-color: #33537F;
+}
+
+#skillBarOpenGL {
+	width: 75%;
+	background-color: #33537F;
+}
+
+
+#skillBarJava {
+	width: 75%;
+	background-color: #33537F;
+}
+
+#skillBarWPF {
+	width: 85%;
+	background-color: #33537F;
+}
+
+#skillBarJavascript {
+	width: 60%;
+	background-color: #33537F;
+}
+
+#skillBarPython {
+	width: 75%;
+	background-color: #33537F;
+}
+
+#skillBarBpUE4 {
+	width: 90%;
+	background-color: #33537F;
+}
+
+#skillBarBGE {
+	width: 75%;
+	background-color: #33537F;
+}
+
+#skillBarShaders {
+	width: 65%;
+	background-color: #33537F;
+}
+
+#skillBarCppUE4 {
+	width: 90%;
+	background-color: #33537F;
+}
+
+/* Version Control */
+
+.skillBarsVersionControl {
+	margin-bottom: 20px;	
+}
+
+#skillBarPerforce {
+	width: 90%;
+	background-color: #236E4C;
+}
+
+#skillBarGit {
+	width: 80%;
+	background-color: #236E4C;
+}
+
+
+#skillBarSVN {
+	width: 90%;
+	background-color: #236E4C;
+}
+
+#skillBarUnityAssetServer {
+	width: 90%;
+	background-color: #236E4C;
+}
+
+/* Applications */
+
+#skillBarVisualStudio {
+	width: 95%;
+	background-color: #594980;
+}
+
+#skillBarXamarinStudio {
+	width: 85%;
+	background-color: #594980;
+}
+
+#skillBarXCode {
+	width: 85%;
+	background-color: #594980;
+}
+
+#skillBarUnity {
+	width: 95%;
+	background-color: #594980;
+}
+
+#skillBarUnreal {
+	width: 90%;
+	background-color: #594980;
+}
+
+#skillBarPhotoshop {
+	width: 70%;
+	background-color: #594980;
 }
 
 ul {
