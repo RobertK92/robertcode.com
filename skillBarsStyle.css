@@ -1,0 +1,190 @@
+/* CSS Document */
+
+.skillBar {
+	width: 220px;
+	height: 17px;
+	text-align: center;
+	text-underline-position: right;
+	text-shadow: 1px 1px black;
+	background-color: #6B6B6B;
+	color:aqua;
+	margin-top: -9px;
+	border-right: thin solid #C5C5C5;
+}
+
+.skillBarBg {
+	width: 220px;
+	height: 17px;
+	background-color: #464646;
+	
+}
+
+.skillBarText {
+	font-size: 12px;
+	
+	height: 100%;
+	transform: translateY(1.2px);
+}
+
+.skillsWrapper {
+	display: inline-block;
+	margin-left: 15px;
+	margin-right: 20px;
+}
+
+#skillBarEndHr {
+	position: relative;
+	width: 1080px;
+}
+
+
+#skillBarShaders {
+	width: 65%;
+	background-color: #33537F;
+}
+
+.skillBarsProgramming {
+	margin-bottom: 20px;	
+}
+
+#skillBarCS {	
+	width: 95%;
+	background-color: #33537F;
+}
+
+#skillBarCSUnity {
+	width: 95%;
+	background-color: #33537F;
+}
+
+#skillBarCSUnityEditor {
+	width: 95%;
+	background-color: #33537F;
+}
+
+#skillBarXNA {
+	width: 95%;
+	background-color: #33537F;
+}
+
+#skillBarSFML {
+	width: 95%;
+	background-color: #33537F;
+}
+
+#skillBarCpp {	
+	width: 85%;
+	background-color: #33537F;
+}
+
+#skillBarOpenGL {
+	width: 75%;
+	background-color: #33537F;
+}
+
+
+#skillBarJava {
+	width: 75%;
+	background-color: #33537F;
+}
+
+#skillBarWPF {
+	width: 85%;
+	background-color: #33537F;
+}
+
+#skillBarJavascript {
+	width: 60%;
+	background-color: #33537F;
+}
+
+#skillBarPython {
+	width: 75%;
+	background-color: #33537F;
+}
+
+#skillBarBpUE4 {
+	width: 90%;
+	background-color: #33537F;
+}
+
+#skillBarBGE {
+	width: 75%;
+	background-color: #33537F;
+}
+
+
+
+#skillBarCppUE4 {
+	width: 90%;
+	background-color: #33537F;
+}
+
+#skillBarHtml {
+	width: 60%;
+	background-color: #33537F;
+}
+
+#skillBarCss {
+	width: 60%;
+	background-color: #33537F;
+}
+
+/* Version Control */
+
+.skillBarsVersionControl {
+	margin-bottom: 20px;	
+}
+
+#skillBarPerforce {
+	width: 90%;
+	background-color: #236E4C;
+}
+
+#skillBarGit {
+	width: 80%;
+	background-color: #236E4C;
+}
+
+
+#skillBarSVN {
+	width: 90%;
+	background-color: #236E4C;
+}
+
+#skillBarUnityAssetServer {
+	width: 90%;
+	background-color: #236E4C;
+}
+
+/* Applications */
+
+#skillBarVisualStudio {
+	width: 95%;
+	background-color: #594980;
+}
+
+#skillBarXamarinStudio {
+	width: 85%;
+	background-color: #594980;
+}
+
+#skillBarXCode {
+	width: 85%;
+	background-color: #594980;
+}
+
+#skillBarUnity {
+	width: 95%;
+	background-color: #594980;
+}
+
+#skillBarUnreal {
+	width: 90%;
+	background-color: #594980;
+}
+
+#skillBarPhotoshop {
+	width: 70%;
+	background-color: #594980;
+}
