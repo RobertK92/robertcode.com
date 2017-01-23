@@ -98,7 +98,6 @@ body {
 	font-family: 'Muli', sans-serif;
 }
 
-
 .contentGrid {
 	position: absolute;
 	margin-left: 170px;
@@ -161,7 +160,7 @@ body {
 
 
 #contentItemQEWL {
-	background-image: url(images/qewl_background.png);
+	background-image: url(images/SearchTool/search2.png);
 }
 
 #contentItemGOAP {
@@ -176,6 +175,9 @@ body {
 	background-image: url(images/procedural1.png);
 }
 
+#contentItemRenderer {
+	background-image: url(images/renderer1.png);
+}
 
 .contentGridItemTitle {
 	text-align: center;
