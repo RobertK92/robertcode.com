@@ -1,0 +1,195 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css?family=Muli" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="darkstyle.css">
+<link rel="stylesheet" href="styles/agate.css">
+
+<script src="highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="jquery.js"></script> 
+	<script> 
+	$(function(){
+	  $("#sideMenu").load("sideMenu.html"); 
+	});
+</script>
+
+	   
+<title>Robert Knoester - MonoGameToolkit</title>
+</head>
+
+<div class="wrapper">	
+	<img id="backgroundImage" src="images/bg.jpg">
+	
+	<section>
+	<div id="sideMenu">	
+	</div>
+	
+	<div class="content"> 
+		<div class="projectContent">
+			<h1>MonoGameToolkit</h1>
+			<a class="repoLink" href="https://github.com/RobertK92/MonoGameToolkit" target="_blank"> Github Repository </a>
+			<br>
+			<hr>
+			<p><i>The MonoGameToolkit is an abstraction on top of MonoGame / XNA that I wrote for my own convenience. </i></p>
+			<hr>
+			<p>The MonoGameToolkit consists of the following features:</p>
+			<ul>
+			<li>Orthographic Camera (Positioning/Rotating/Zooming)</li>
+			<li>Sprite Object</li>
+			<li>AnimatedSprite Object</li>
+			<li>TextField Object</li>
+			<li>Nine-Slicing</li>
+			<li>Level Managment</li>
+			<li>Automatic Vertex Batching</li>
+			<li>Automatic Depth Sorting</li>
+			<li>Integrated Physics (powered by Farseer)</li>
+			<li>Coroutines</li>
+			<li>Tiled Parser</li>
+			<li>TexturePacker Parser</li>
+			<li>Content Path Generator</li>
+			</ul>
+			<p>I have deliberately not created an Entity-Component System for this framework in order to keep it flexible enough for the user to write such an abstraction layer himself. Also, for quick prototyping I found it much handier to use inheritance over an ECS. <br> I will go over some of the most important features.</p>
+			<h1>Example</h1>
+			<p>In order to use the framework, the user has to create a new MonoGame project and include the MonoGameToolkit project or DLL. Then the user has to inherit from MGTK instead of the Game class. The user then creates a new Level and loads that level in the projects game class.</p>
+			
+			<pre><code>
+public class Game1 : MGTK
+{
+	protected override void LoadContent()
+	{
+		base.LoadContent();
+		Window.Title = "Test Game";
+		LoadLevel&lt;Levels.TestLevel&gt;();
+	}
+}
+			</code></pre>
+			
+			<pre><code>
+public class TestLevel : Level
+{
+	public override void Load()
+	{
+		// Creates the background.
+		Sprite background = new Sprite(Strings.Content.Textures.BackgroundJPG);
+		background.Position = background.Size / 2;
+		background.DrawOrder = -1;
+
+		// Creates a collision box for the floor.
+		BaseObject floor = new BaseObject();
+		floor.Position = new Vector2(640, 550);
+		floor.Scale = new Vector2(1280, 10);
+		floor.EnablePhysicsRectangle(BodyType.Static, new Rectangle(floor.Position.ToPoint(), floor.Scale.ToPoint()));   
+
+	}
+
+	public override void Update(GameTime gameTime)
+	{
+		MouseState mouseState = Mouse.GetState();
+		if(mouseState.IsMouseButtonPressedOnce(MouseButtons.Left))
+		{
+			// Creates a crate.
+			Sprite crate = new Sprite(Strings.Content.Textures.CratePNG);
+			crate.Position = mouseState.Position.ToVector2();
+			crate.EnablePhysicsRectangle(BodyType.Dynamic, crate.Bounds);
+			crate.PhysicsBody.LinearDamping = 3.0f;
+		}
+	}
+}
+			</code></pre>
+			
+			<p>That is was all the code that's needed to get the following result:</p>
+			
+			<video class="projectVideo" width="1100" controls>
+				<source src="videos/vidMgtk.mp4" type="video/mp4">
+			</video>
+			
+			<h1>Level Managment</h1>
+			<p>At any point the user can load another level using the static generic method: </p>
+			
+			<pre><code>
+MGTK.LoadLevel&lt;LevelType&gt;
+			</code></pre>
+			<p>The previous level will be automatically destroyed and cleaned up and the new level is loaded.</p>
+			
+			<h1>BaseObject</h1>
+			<p>All objects in the framework use BaseObject as their deepest base class. <br> The BaseObject contains virtual functions that derived members can override to add logic to the object.</p>
+			
+			<pre><code>
+protected virtual void Initialize() { }
+protected virtual void DebugDraw(DebugDrawer drawer) { }
+protected virtual void Update(GameTime gameTime) { }
+protected virtual void FixedUpdate() { }
+protected virtual void OnDestroy() { }
+protected virtual void OnContact(ContactInfo contact) { }
+protected virtual void OnSeperate(ContactInfo contact) { }
+protected virtual void OnPreSolve(ContactInfo contact) { }
+protected virtual void OnPostSolve(ContactInfo contact) { }
+protected virtual void OnContactSensor(ContactInfo contact) { }
+protected virtual void OnSeperateSensor(ContactInfo contact) { }
+			</code></pre>
+			
+			<h1>Vertex Batching</h1>
+			<p>Anything that can be drawn to the screen inherits from DrawableObject (which inherits from BaseObject). <br> A DrawableObject (e.g.a sprite or a textfield) contains some render options. These options are:</p>
+			<ul>
+				<li>DrawingSpace (screen or world)</li>
+				<li>DrawingOrder</li>
+				<li>SortMode</li>
+				<li>BlendState</li>
+				<li>SamplerState</li>
+				<li>DepthStencilState</li>
+				<li>RasterizerState</li>
+				<li>Effect (shader)</li>
+				<li>Transformation Matrix (usually Identity)</li>
+			</ul>
+			
+			<p>The framework will automatically batch together all the drawable objects that have the same rendering options. So if rendering options are never changed, all objects in the world are drawn in 1 draw call. <br> Unless the batch is full, then a new batch will be created as well.</p>
+		</div>
+	</div>
+	</section>
+</div>
+
+
+<body>
+
+<script>
+	function OnShowCodeButtonPressed(buttonTextId, codeId)
+	{
+		ToggleElement(codeId);	
+		var bars = document.getElementById(codeId);
+		var buttonText = document.getElementById(buttonTextId);
+		
+		if(bars.style.display == "none")
+		{
+			buttonText.innerHTML = "Show Code";
+		}
+		else if(bars.style.display == "block")
+		{
+			buttonText.innerHTML = "Hide Code";
+		}
+	}
+	
+	function ToggleElement(id) 
+	{
+		var element = document.getElementById(id);
+		var state = element.style.display;
+		
+		var infos = document.getElementsByName("contactInfo");
+		for(var i = 0; i < infos.length; i++)
+		{
+			infos[i].style.display = "none";
+		}
+
+		if(state == "block") 
+		{
+			element.style.display = "none";
+		}
+		else 
+		{
+			element.style.display = "block";
+		}
+	}
+</script>
+</body>
+</html>

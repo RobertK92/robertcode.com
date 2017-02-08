@@ -6,41 +6,54 @@ body {
 	overflow-x: hidden;
 }
 
+#backgroundImage {
+	z-index: -1;
+	position: fixed;
+	margin-top: -10px;
+}
 
 .wrapper {
 	width: 100%;
 	height: 100%;
 	z-index: 1;
-	
+	position: absolute;
 }
 
 .sideMenu {
-	background-color: #201E23;
+	position: absolute;
+	background-color: rgba(0, 0, 0, 0.3);
 	border-left: thin solid #5F5F5F;
 	border-right: thin solid #5F5F5F;
+	border-bottom: thin solid #5F5F5F;
 	text-align: center;
 	font-family: 'Muli', sans-serif;
 	font-size: 25px;
 	width: 250px;
-	height: 110vh;
+	height: 1700px;
 	top: 0px; 
 	margin-top: -10px;
 	margin-left: 10px;
 	overflow: hidden;
-	position: fixed;
+	float:left;
 	z-index: 10;
 }
 
+
+
 .profilePicture {
-	max-height: 250px;
-	max-width: 200px;
+	border: thin solid #5A5A5A;
+	border-width: 2px;
+	height: 230px;
+	width: 200px;
 	margin-left: 25px;
+	margin-bottom: 20px;
 	overflow: hidden;
 }
 
 
 .sideMenuInfoEducation {
-	margin-top: 50px;	
+	margin-top: 50px;
+	margin-bottom: 400px;
 }
 
 .sideMenuInfo {
@@ -82,55 +95,123 @@ body {
 	display: none;
 }
 
+
 .URL {
 	color: #3175FF;
 }
 
 .content {
 	margin-top: 10px;
-	margin-left: 290px;
+	margin-left: 110px;
 	width: 100%;
 	height: 100%;
 	font-family: 'Muli', sans-serif;
 }
 
 .contentGrid {
-	position: relative;
-	width: 1100px;
+	position: absolute;
+	margin-left: 170px;
+	margin-top: 10px;
+	width: 500px;
 	height: 100%;
 }
 
+@media screen and (min-width: 1000px) {
+	.contentGrid {
+		width: 800px;
+	}
+}
+
+@media screen and (min-width: 1300px) {
+	.contentGrid {
+		width: 1100px;
+	}
+}
+
+@media screen and (min-width: 1600px) {
+	.contentGrid {
+		width: 1400px;
+	}
+}
+
+@media screen and (min-width: 1900px) {
+	.contentGrid {
+		width: 1700px;
+	}
+}
+
+.projectContent {
+	margin-left: 200px;
+	margin-top: 60px;
+}
+
 .contentGridItem {
+	z-index: 1;
 	width: 300px;
 	height: 350px;
 	border: thin solid;
 	border-width: 2px;
 	border-color: #606060;
 	float: left;
-	margin-right: 30px;
-	margin-left: 30px;
-	margin-bottom: 30px;
-	transition: all 200ms ease-in-out;
+	position: relative;
+	margin-left: 10px;
+	transition: all 100ms ease-in-out;
 }
 
 .contentGridItem:hover{
-	transform: scale(1.1);
+	
 	cursor: pointer;
 }
 
-#contentItemQEWL {
-	background-image: url(images/qewl_background.png);
+.itemDescription {
+	max-height: 200px;
+}
+
+.completeItem {
+	float:left;
+	position: relative;
 }
 
 
+#contentItemQEWL {
+	background-image: url(images/SearchTool/search2.png);
+}
+
+#contentItemGOAP {
+	background-image: url(images/goap1.png);
+}
+
+#contentItemBoltstorm {
+	background-image: url(images/boltstorm1.png);
+}
+
+#contentItemProcedural {
+	background-image: url(images/procedural1.png);
+}
+
+#contentItemProcedural:hover {
+	background-image: url(images/procedural3.png);
+}
+
+#contentItemRenderer {
+	background-image: url(images/renderer1.png);
+}
+
 .contentGridItemTitle {
 	text-align: center;
+	height: 30px;
 	font-size: 20px;
+	background-color: rgba(0, 0, 0, 0.3);
+}
+
+.contentGridItemChecklist {
+	float: left;
+	height: 220px;
 }
 
 .checkListItem {
 	margin-bottom: 3px;
-	
+	text-shadow: 1px 1px black;
 }
 
 .archives {
@@ -143,19 +224,58 @@ body {
 	font-size: 12px;
 }
 
-.skillProgress {
-	width: 250px;
-	height: 10px;
+#skillBars {
+	display: none;
 }
 
-progress {
-	border-radius: 9px;
-	background-color: #909090;
-	
+.skillsButton {
+	width: 90%;
+	height: 50px;
+	background-color: rgba(0, 0, 0, 0.3);
+	border-color: rgba(0, 0, 0, 0.2);
+	border-style: solid;
+	margin-bottom: 0px;
 }
 
-#cSharpProgress {	
-	
+.skillsButton:hover {
+	cursor: pointer;
+	background-color: rgba(100, 125, 225, 0.3);
+}
+
+#showSkillsButtonText {
+	color: #D8D8D8;
+}
+
+.projectsTitle {
+	text-align: center;
+}
+
+.showCodeButton {
+	width: 1113px;
+	height: 40px;
+	background-color: rgba(0, 0, 0, 0.3);
+	border-color: rgba(0, 0, 0, 0.2);
+	border-style: solid;
+	margin-bottom: 0px;
+}
+
+.showCodeButton:hover {
+	cursor: pointer;
+	background-color: rgba(100, 125, 225, 0.3);
+}
+
+.showCodeText {
+	font-family:Calibri;
+	margin-top: 7px;
+	font-size: 15px;
+}
+
+.code {
+	display: none;
+}
+
+.repoLink {
+	color: #3175FF;
 }
 
 ul {
@@ -165,19 +285,19 @@ ul {
 
 hr { 
     display: block;
-    border-style: dotted;
-	border-color: #3B3B3B;
+    border-style: solid;
+	border-color: rgba(172,172,172,1.00);
     border-width: 1px;
 }
 
 h1 {
     color: white;
-    text-align: center;
 	text-shadow: 1px 1px grey;
 }
 
 h2 {
 	color: #D0D0D0;
+	text-shadow: 2px 2px black;
 }
 
 h3 {

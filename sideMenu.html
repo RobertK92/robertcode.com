@@ -4,13 +4,26 @@
 <head>
 <meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="darkstyle.css">
+
+<script src="jquery.js"></script> 
+    <script> 
+    $(function(){
+      $("#skillBars").load("skillBars.html"); 
+    });
+	
+    </script> 
+    
 </head>
 
 <div class="sideMenu">
 	<p>Robert Knoester</p>
 	<div class="profilePicture">
-		<img src="images/photo.png"/>
+		<a href="index.html"><img src="images/photo5.png"/></a>
 	</div>
+	<button id="skillsButton" class="skillsButton" onClick="OnSkillsButtonPressed()"><b><p id="showSkillsButtonText">Show Skills </p></b></button>
+	
+	<div id="skillBars"></div>
+	
 	<div class="sideMenuInfo">
 		<p><b>General</b></p>
 		<p>Game / software programmer</p>
@@ -47,11 +60,28 @@
 			<p>of Applied Sciences</p>
 			<a id="nhtvURL" class="URL" href="https://www.nhtv.nl/ENG.html" target="_blank">NHTV Website</a>
 		</div>
+		
 		<br>
 	</div>
 </div>
 
 <script>
+	function OnSkillsButtonPressed()
+	{
+		ToggleElement('skillBars');	
+		var bars = document.getElementById('skillBars');
+		var buttonText = document.getElementById('showSkillsButtonText');
+		
+		if(bars.style.display == "none")
+		{
+			buttonText.innerHTML = "Show Skills";
+		}
+		else if(bars.style.display == "block")
+		{
+			buttonText.innerHTML = "Hide Skills";
+		}
+	}
+	
 	function ToggleElement(id) 
 	{
 		var element = document.getElementById(id);
