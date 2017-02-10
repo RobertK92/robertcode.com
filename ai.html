@@ -1,0 +1,318 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css?family=Muli" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="darkstyle.css">
+<link rel="stylesheet" href="styles/agate.css">
+
+<script src="highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script src="jquery.js"></script> 
+	<script> 
+	$(function(){
+	  $("#sideMenu").load("sideMenu.html"); 
+	});
+</script>
+
+	   
+<title>Robert Knoester - AI</title>
+</head>
+
+<div class="wrapper">	
+	<img id="backgroundImage" src="images/bg.jpg">
+	
+	<section>
+	<div id="sideMenu">	
+	</div>
+	
+	<div class="content"> 
+		<div class="projectContent">
+			<h1>Artificial Intelligence</h1> 
+			<a class="repoLink" href="https://github.com/RobertK92/AirportSimulator" target="_blank"> Github Repository </a>
+			<br>
+			<hr>
+			<p><i> This is a group project I did with 3 other programmers from my school. We used Unity3D and C#. I primarily worked on the AI together with 1 other programmer, 1 other programmer did the agent avoidance and the last programmer did general airport managment. I did Utility Theory and helped with the GOAP.  </i></p>
+			<hr>
+			<p>This project aims to simulate the behaviour of people in an airport (we used Eindhoven Airport for the layout). <br> In order to simulate behaviour we made a Goal Oriented Action Planner (or GOAP) together with a concept called Utility Theory. </p>
+			
+			<h1>Video</h1>
+			<video width="1100" controls>
+				<source src="videos/vidAirport.mp4" type="video/mp4">
+			</video>
+			
+			<h1>Goal Oriented Action Planner (GOAP)</h1>
+			<p>While we were planning the technical design for this project, we initially wanted to use behaviour trees. However, we discovered that a GOAP will be much more flexible for quickly adding new tasks for the agents. a GOAP is also much easier to manage if the amount of tasks grow.</p>
+			
+			
+			<p>The structure is designed as follows: <br> There are <u><b>Agents</b></u>, All agents have their own <b><u>Planner</u></b> which determines the agents current <b><u>Action</u></b>. <br> Actions have <b><u> Preconditions </u></b> which are also actions. (e.g. a precondition for boarding the plane would be checking in and going through customs). </p>
+			
+			<p>In the code below you can see that boarding the plane requires certain other actions: (!HasBoardedPlane, HasCheckedIn and HasSecurityCheck).</p>
+			
+			<button class="showCodeButton" onClick="OnShowCodeButtonPressed('showActionCodeText', 'actionCode', '(BoardPlaneAction)')">
+				<p class="showCodeText" id="showActionCodeText">Show Code (BoardPlaneAction)</p>
+			</button>
+			
+			<pre class="code" id="actionCode"><code>
+public class BoardPlaneAction : GoapAction
+{
+	public override int Cost { get { return 10; } }
+
+	public override float Duration { get { return 20f; } }
+
+	private GoapGoal[] _preconditions = new GoapGoal[]
+	{
+	state => !state.HasBoardedPlane,
+
+	state => state.HasCheckedIn,
+	state => state.HasSecurityCheck,
+	};
+
+	public override GoapGoal[] Preconditions { get { return _preconditions; } }
+
+	public override bool Init(GoapAgent agent)
+	{
+		if (IsInitialized) return true;
+
+		var flight = GetComponent&lt;Agent&gt;().flight;
+		_target = Airport.Instance.GetGate(flight);
+
+		if (_target == null)
+			return false;
+
+		IsInitialized = true;
+		_currentDuration = Duration;
+
+		return true;
+	}
+
+	public override void ChangeState(GoapState state)
+	{
+		state.HasBoardedPlane = true;
+	}
+
+	public override void NotifyAirport()
+	{
+		Airport.Instance.Register(_target, GetComponent&lt;Agent&gt;());
+	}
+
+	public override void Reset()
+	{
+		_currentDuration = 0f;
+		IsInitialized = false;
+	}
+}
+			</code></pre>
+			
+			<p>The actions need to be created once and can then automatically be used by the planner. This is especially nice because the actions don't have any intertwined relationship with eachother (like behaviour trees do).</p>
+			<p>Available actions:</p>
+			<img src="images/goapActions.png">
+			
+			<p>The code below shows how the planner creates a plan. It first builds a graph (or tree) recursively. It will all the paths that lead to the target goal (action). <br> Once the graph is build, the nodes (which contain the actions) can be traversed back (using cost) to find the most efficient way of reaching the target action.</p>
+			
+			<button class="showCodeButton" onClick="OnShowCodeButtonPressed('showPlannerCodeText', 'plannerCode', '(Planner)')">
+				<p class="showCodeText" id="showPlannerCodeText">Show Code (Planner)</p>
+			</button>
+			
+			<pre class="code" id="plannerCode"><code>
+/// &lt;summary&gt;
+/// Creates a plan of actions for a specified goal. Returns true if a plan was found.
+/// &lt;/summary&gt;
+/// &lt;param name="currentState">The current state of the agent.&lt;/param&gt;
+/// &lt;param name="airportState">The current state of the airport.&lt;/param&gt;
+/// &lt;param name="actionOutput"&gt;Ouputs the plan of actions for the specified goal. Should be empty&lt;/param&gt;
+/// &lt;param name="goals"&gt;The end goals of the plan.&lt;/param&gt;
+/// &lt;returns&gt;Returns true if a plan was found.&lt;/returns&gt;
+public bool MakePlan(GoapAgent agent, Stack&lt;GoapAction&gt; actionOutput, GoapGoal[] goals)
+{
+	var node = new Node(null, agent.State, null, 0);
+	var leaves = new List&lt;Node&gt;();
+	var actions = _availableActions.ToList();
+	foreach (var action in actions) action.Reset();
+
+	var foundPlan = BuildGraph(node, leaves, actions, goals);
+	if (!foundPlan) return false;
+
+	var n = leaves.Aggregate((Node)null, (acc, item) => acc == null || acc.cost > item.cost ? item : acc);
+	while (n != null)
+	{
+		if (n.action != null)
+			actionOutput.Push(n.action);
+
+		n = n.parent;
+	}
+
+	return true;
+}
+
+/// &lt;summary&gt;
+/// Creates all available plans for the specified goals.
+/// &lt;/summary&gt;
+/// &lt;param name="parent"&gt;The parent node.&lt;/param&gt;
+/// &lt;param name="leaves"&gt;A list with all possible plans. Should be empty when passed.&lt;/param&gt;
+/// &lt;param name="availableActions"&gt;All the available actions.&lt;/param&gt;
+/// &lt;param name="goals"&gt;The goals of the plan.&lt;/param&gt;
+/// &lt;returns&gt;&lt;/returns&gt;
+private bool BuildGraph(Node parent, List&lt;Node&gt; leaves, List&lt;GoapAction&gt; availableActions, GoapGoal[] goals)
+{
+	bool success = false;
+
+	foreach (var action in availableActions)
+	{
+		if (action.Preconditions.All(x => x(parent.state)))
+		{
+			var actionState = new GoapState();
+			action.ChangeState(actionState);
+			var affectedState = actionState.MergeState(parent.state);
+			var node = new Node(parent, affectedState, action, parent.cost + action.Cost);
+
+			if (goals.All(x => x(affectedState)))
+			{
+				leaves.Add(node);
+				success = true;
+			}
+			else
+			{
+				var actions = new List&lt;GoapAction&gt;(availableActions.Where(x => x != action));
+				if (BuildGraph(node, leaves, actions, goals))
+					success = true;
+			}
+		}
+	}
+
+	return success;
+}
+			</code></pre>
+			
+			<h1>Utility Theory</h1>
+			<p>Utility Theory is basically a concept that determines how important an action is for a particular agent at a certain time. <br> So Utility Theory determines <b><u>what</u></b> action needs to be done, while the GOAP determines <b><u>how</u></b> that action can be done.</p>
+			
+			<p>The image below shows the utility of a random agent.</p>
+			<img src="images/utility1.png">
+			
+			<p>This agent has 5 different utilities (trail-actions that it can find important). With a trail-action I mean a pre-determined "goal" that can have preconditions but is essentially an end-goal instead of a substep. (e.g. the agents wants to board the plane, checking-in and going through customs is not what he wants, it something he has to do to reach the goal).</p>
+			
+			<pre><code>
+public enum LongTermGoal
+{
+	None,
+	Eat,
+	Drink,
+	Toilet,
+	TakeCover,
+	BoardPlane,
+}
+			</code></pre>
+			
+			<p>The Utility Agent will notify the Goap Agent when a new goal has been assigned, the planner can then re-calculate the plan.</p>
+			<button class="showCodeButton" onClick="OnShowCodeButtonPressed('showUtilityCodeText', 'utilityCode', '(UtilityAgent)')">
+				<p class="showCodeText" id="showUtilityCodeText">Show Code (UtilityAgent)</p>
+			</button>
+			
+			<pre class="code" id="utilityCode"><code>
+private void OnLongTermGoalHasChanged(LongTermGoal goal)
+{
+	switch (goal)
+	{
+		case LongTermGoal.None:
+			goapAgent.AssignGoals(null, LongTermGoal.None);
+			navAgent.SetDestination(transform.position);
+			break;
+		case LongTermGoal.Eat:
+			goapAgent.State.HasEaten = false;
+			goapAgent.AssignGoals(new GoapGoal[]
+			{
+				state => state.HasEaten
+			}, goal);
+			break;
+		case LongTermGoal.Drink:
+			goapAgent.State.HasDrunk = false;
+			goapAgent.AssignGoals(new GoapGoal[]
+			{
+				state => state.HasDrunk
+			}, goal);
+			break;
+		case LongTermGoal.Toilet:
+			goapAgent.State.HasUsedToilet = false;
+			goapAgent.AssignGoals(new GoapGoal[]
+			{
+				state => state.HasUsedToilet
+			}, goal);
+			break;
+		case LongTermGoal.TakeCover:
+			break;
+		case LongTermGoal.BoardPlane:
+			goapAgent.State.HasBoardedPlane = false;
+			goapAgent.AssignGoals(new GoapGoal[]
+			{
+				state => state.HasBoardedPlane
+			}, goal);
+			break;
+		default:
+			break;
+	}
+}
+			</code></pre>
+			
+			<p>The amount of "Utility" is determined per goal using a curve. <br> The curve represents how important (how much utility) the goal has over a value between 0 and 1. This value can differ per action . (e.g. For the boarding plane action (curve shown below), the value represents the current time devided by the departure time).</p>
+			
+			<img src="images/boardplaneCurve.png">
+			
+			<p>As you can see, boarding the plane is a very unimportant action when it's too early to board. But at a certain time (x amount of minutes before departure) it becomes important very quickly. At a certain time before departures it becomes 1.</p>
+			
+			<p>The curve below shows the utility curve for the toilet action.</p>
+			
+			<img src="images/wcCurve.png">
+			
+			<p>This curve is different because you initially need to go a little bit and then your need increases more steadily over time.</p>
+			<p>I have build in a priority system on top of the utility system so that certain actions will always be chosen over others if their utility value is equal (you don't want to mis your plane because you have to go to the toilet).</p>
+			
+			<h1>Prize</h1>
+			<p>With this project, we won the code award for our year (sorry for the low quality image).</p>
+			<img src="images/prize1.png">
+			
+			<br>
+		</div>
+	</div>
+	</section>
+</div>
+
+
+<body>
+
+<script>
+	function OnShowCodeButtonPressed(buttonTextId, codeId, textPostfix = "")
+	{
+		ToggleElement(codeId);	
+		var code = document.getElementById(codeId);
+		var buttonText = document.getElementById(buttonTextId);
+		
+		if(code.style.display == "none")
+		{
+			buttonText.innerHTML = "Show Code " + textPostfix;
+		}
+		else if(code.style.display == "block")
+		{
+			buttonText.innerHTML = "Hide Code " + textPostfix;
+		}
+	}
+	
+	function ToggleElement(id) 
+	{
+		var element = document.getElementById(id);
+		var state = element.style.display;
+
+		if(state == "block") 
+		{
+			element.style.display = "none";
+		}
+		else 
+		{
+			element.style.display = "block";
+		}
+	}
+</script>
+</body>
+</html>
+
