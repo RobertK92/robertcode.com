@@ -177,6 +177,10 @@ body {
 	background-image: url(images/SearchTool/search2.png);
 }
 
+#contentItemQEWL:hover {
+	background-image: url(images/SearchTool/search2overlay.png);
+}
+
 #contentItemGOAP {
 	background-image: url(images/goap1.png);
 }

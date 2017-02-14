@@ -35,7 +35,7 @@
 			<hr>
 			<p><i>For this project I use MonoGame C# and my homemade framework library called "MonoGameToolkit" which is a generic framework I use in all my monogame projects. <a class="URL" href="mgtk.html"> Click here</a> for more info about the  MonoGameToolkit. </i></p>
 			<hr>
-			<p> With this project, I aim to create a procedurally generated world with an gigantic amount of tiles and objects while still running at a high framerate and acceptable memory usage (60+ FPS, < 1GB RAM). </p>
+			<p> With this project, I aim to create a procedurally generated world with an gigantic amount of tiles and objects while still running at a high framerate and acceptable memory usage (60+ FPS, less than 1GB RAM). </p>
 			<p> In the video below you can see a 10k x 10k generated world (a total of 100 million 16x16 tiles). <br> The world will automatically create and destroy chunks based on the players location in the chunk grid.</p>
 			<video class="projectVideo" width="1100" controls>
 				<source src="videos/vidProcedural1.mp4" type="video/mp4">
@@ -176,8 +176,8 @@ private void GenerateGround(int x, int y, int tx, int ty, ref TileId[,] tiles)
 			<pre><code class="code" id="worldXmlCode">
 &lt;World&gt; 
   &lt;ShowWholeWorld&gt;false&lt;/ShowWholeWorld&gt;
-  &lt;ChunkWidth> 16 &lt;/ChunkWidth&gt;
-  &lt;ChunkHeight> 16 &lt;/ChunkHeight&gt;
+  &lt;ChunkWidth&gt; 16 &lt;/ChunkWidth&gt;
+  &lt;ChunkHeight&gt; 16 &lt;/ChunkHeight&gt;
   &lt;RenderRadiusInChunks&gt; 6 &lt;/RenderRadiusInChunks&gt;
   &lt;WorldObjectFadingEnabled&gt; true &lt;/WorldObjectFadingEnabled&gt;
   &lt;WorldObjectFadingSpeed&gt; 0.5 &lt;/WorldObjectFadingSpeed&gt;
