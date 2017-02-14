@@ -4,29 +4,380 @@
 <meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css?family=Muli" rel="stylesheet">
 <link rel="stylesheet" type="text/css" href="darkstyle.css">
+<link rel="stylesheet" href="styles/agate.css">
+
+<script src="highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
 
 <script src="jquery.js"></script> 
-    <script> 
-    $(function(){
-      $("#sideMenu").load("sideMenu.html"); 
-    });
+	<script> 
+	$(function(){
+	  $("#sideMenu").load("sideMenu.html"); 
+	});
 </script>
-    
-<title>Robertkn - Quick Easy Windows Launcher</title>
+
+	   
+<title>Robertkn - Windows Launch Tool</title>
 </head>
 
 <div class="wrapper">	
+	<img id="backgroundImage" src="images/bg.jpg">
+	
 	<section>
-	<div id="sideMenu">
-		
+	<div id="sideMenu">	
 	</div>
+	
 	<div class="content"> 
-		<p>QEWL</p>
+		<div class="projectContent">
+			<h1>Quick Easy Windows Launcher (QEWL)</h1> 
+            <a class="repoLink" href="https://github.com/RobertK92/QEWL" target="_blank"> Github Repository </a>
+			<hr>
+            <p>Quick Easy Windows Launcher (QEWL) is a C# WPF multithreaded file indexing program that runs in the background. You can quickly bring up the UI using a global hotkey. QEWL is largely inspired by OSX's Spotlight.</p>
+            <hr>
+            <p>This program scans all available drives on your system for files and folders. In the future I want to add the drives you want to scan as an option in the preferences window. <br> This process is multithreaded and will take 10-20 seconds depending on the amount of files on your system.</p>
+            
+            <pre><code>TODO: Show example video</code></pre>
+            
+            <p>The code below shows the QueryHandler class, this is an abstract base class for everything that processes queries and does something with it (a query being the input of the user). </p>
+            
+            <button class="showCodeButton" onClick="OnShowCodeButtonPressed('showQueryHandlerCodeText', 'queryHandlerCode')">
+				<p class="showCodeText" id="showQueryHandlerCodeText">Show Code</p>
+			</button>
+            
+            <pre class="code" id="queryHandlerCode"><code> 
+namespace QEWL
+{
+    public abstract class QueryHandler
+    {
+        protected abstract void OnQuery(string text);
+        protected abstract bool OnConfirmed(UIResultItem result);
+        protected abstract void OnScan();
+        
+        public int MaxResultsShown          { get; set; }
+        public MainWindow MainWindow        { get; private set; }
+        public bool IsScanning              { get; private set; }
+        public UIResults ShownResults       { get; private set; }
+
+        protected Dictionary&lt;IntPtr, ImageSource&gt; IconCache { get; private set; }
+
+        public event Action OnScanComplete                        = delegate { };
+        public event Action OnQueryBegin                          = delegate { };
+        public event Action&lt;UIResults, string&gt; OnQueryEnd         = delegate { };
+        
+        private object _queryDictLock = new object();
+        
+        public QueryHandler(MainWindow mainWindow)
+        {
+            ShownResults = new UIResults();
+            IconCache = new Dictionary&lt;IntPtr, ImageSource&gt;();
+            MainWindow = mainWindow;
+            MaxResultsShown = 32;
+        }
+
+        protected virtual IOrderedEnumerable&lt;UIResultItem&gt; OrderResults(UIResults currentOrder, string query)
+        {
+            return null;
+        }
+
+        protected virtual void OnResultItemsAddedForShow(IEnumerable&lt;UIResultItem&gt; results, ListBox listBoxResults) { }
+        protected virtual void OnResultsShown(UIResults shownResults) { }
+
+        public void ShowResults(UIResults results, string query)
+        {
+            IOrderedEnumerable&lt;UIResultItem&gt; ordered = results.SortByNameRelevance(query);
+            ordered = OrderResults(results, query);
+
+            if (ordered != null)
+            {
+                UIResults sortedResults = new UIResults();
+                int resultCount = 0;
+                foreach (UIResultItem result in ordered)
+                {
+                    if (resultCount >= MaxResultsShown)
+                        break;
+                    sortedResults.Add(result);
+                    resultCount++;
+                }
+                
+                ShownResults = sortedResults;
+                OnResultItemsAddedForShow(sortedResults, MainWindow.ListBoxResults);
+                MainWindow.ListBoxResults.ItemsSource = sortedResults;
+            }
+            else
+            {
+                ShownResults = results;
+                OnResultItemsAddedForShow(results, MainWindow.ListBoxResults);
+                MainWindow.ListBoxResults.ItemsSource = results;
+            }
+
+            if (MainWindow.ListBoxResults.HasItems)
+            {
+                MainWindow.ListBoxResults.Visibility = Visibility.Visible;
+            }
+
+            OnResultsShown(results);
+        }
+
+        public void Scan()
+        {
+            if(IsScanning)
+            {
+                Log.Warning("Attempting to begin new scan while already scanning");
+                return;
+            }
+
+            Log.Message(string.Format("Scanning {0}...", GetType().Name));
+            IsScanning = true;
+            OnScan();
+        }
+
+        protected void ScanComplete()
+        {
+            IsScanning = false;
+            OnScanComplete();
+        }
+
+        protected void QueryEnd(UIResults results, string query)
+        {
+            OnQueryEnd(results, query);
+        }
+
+        public bool Confirm()
+        {
+            if (MainWindow.ListBoxResults.SelectedItem != null)
+            {
+                UIResultItem item = (UIResultItem)MainWindow.ListBoxResults.SelectedItem;
+                Log.Message(string.Format("Confirmed item: {0}", item.ResultName));
+                return OnConfirmed(item);
+            }
+            return false;
+        }
+
+        public void Query(string text)
+        {
+            OnQueryBegin();
+            if (MainWindow.ListBoxResults.HasItems)
+            {
+                MainWindow.ListBoxResults.ItemsSource = null;
+            }
+            OnQuery(text);
+        }
+    }
+}
+</code></pre>
+            
+            <p>Examples of QueryHandlers are: CommandQueryHandler, SystemQueryHandler and the WebQueryHandler. <br> The CommandQueryHandler handles queries as command. <br> The most important one is the SystemQueryHandler, this one scans your system and indexes files and folders.</p>
+            
+            <h1>SystemQueryHandler</h1>
+            <p>The SystemQueryHandler will scan the system for files and folders (once on startup or using the scan command). </p>
+            
+            <button class="showCodeButton" onClick="OnShowCodeButtonPressed('showSystemScanCodeText', 'systemScanCode')">
+				<p class="showCodeText" id="showSystemScanCodeText">Show Code</p>
+			</button>
+            
+            <pre class="code" id="systemScanCode"><code>
+protected override void OnScan()
+{
+    BackgroundWorker worker = new BackgroundWorker();
+    Stopwatch timer = Stopwatch.StartNew();
+    worker.DoWork += (sender, args) =>
+    {
+        DriveInfo[] drives = DriveInfo.GetDrives();
+        IEnumerable&lt;DriveInfo&gt; readyDrives = drives.Where(x => x.IsReady);
+        Log.Message(string.Format("{0} ready drives detected", readyDrives.Count()));
+
+        Parallel.ForEach(readyDrives, (DriveInfo drive) =>
+        {
+            Log.Message(string.Format("Scanning drive {0}: [{1}] ASync...", drive.VolumeLabel, drive.Name));
+            SystemQueryResultItem result = new SystemQueryResultItem(drive.Name);
+            AddItem(result);
+            ScanSubDirsAndFiles(drive.RootDirectory, true);
+        });
+    };
+
+    worker.RunWorkerCompleted += (sender, args) => 
+    {
+        SortBigList();
+        ScanComplete();
+        Log.Success(string.Format("{0} scan completed in {1} seconds", GetType().Name, timer.Elapsed.TotalSeconds.ToString("F3")));
+        GC.Collect();
+        Log.ReportMemoryUsage();
+        Console.Beep();
+    };
+
+    worker.RunWorkerAsync();
+}
+            </code></pre>
+            
+            <p>It scans all drives in parallel and all root folders in every drive in parallel. The whole scan process itself runs on a background thread. So the UI remains responsive at all times.</p>
+            <p>The files and folders are recursively scanned as shown in the code below.</p>
+            
+            <button class="showCodeButton" onClick="OnShowCodeButtonPressed('showSystemScanCode2Text', 'systemScanCode2')">
+				<p class="showCodeText" id="showSystemScanCode2Text">Show Code</p>
+			</button>
+            
+            <pre class="code" id="systemScanCode2"><code>
+private void ScanSubDirsAndFiles(DirectoryInfo parentDir, bool isRoot = false)
+{
+    try
+    {
+        IEnumerable&lt;DirectoryInfo&gt; dirs = parentDir.EnumerateDirectories();
+        IEnumerable&lt;FileInfo&gt; files = parentDir.EnumerateFiles();
+
+        // Root folders are filtered and scanned in parallel.
+        if (isRoot)
+        {
+            dirs = dirs.Where(x => !RootIgnorePaths.Contains(x.FullName));
+            Parallel.ForEach(dirs, (DirectoryInfo dir) =>
+            {
+                Stopwatch timer = Stopwatch.StartNew();
+                ScanSubDirsAndFiles(dir);
+                SystemQueryResultItem result = new SystemQueryResultItem(dir.FullName);
+                AddItem(result);
+            });
+        }
+        else
+        {
+            foreach (DirectoryInfo dir in dirs)
+            {
+                ScanSubDirsAndFiles(dir);
+                SystemQueryResultItem result = new SystemQueryResultItem(dir.FullName);
+                AddItem(result);
+            }
+        }
+
+        // Scan files.
+        foreach (FileInfo file in files)
+        {
+            SystemQueryResultItem result = new SystemQueryResultItem(file.FullName);
+            AddItem(result);
+        }
+    }
+    catch (UnauthorizedAccessException e)
+    {
+        //Log.Warning(e.Message);
+    }
+}
+            </code></pre>
+            
+            <p>In earlier versions, I made a dictionary tree with char letter as key. I then iterated over the letters of a file or folder name and indexed every subname in the dictionary tree. For example, the folder "git" could be found in Dictionary['g']['i']['t']. I thought of this method in order to easily find substring of a name from queries. (e.g. the user could type in "gi" and the dictionary would find any result in the tree using Dictionary['g']['i']. The git folder would be in there but also other results starting with "gi". </p>
+            <p>Even though it worked nicely, I moved away from this approach because it was not very memory efficient. I know simply use a list in 1 block of memory and sort it alphabetically.</p>
+            
+            <pre><code>BigResultList = BigResultList.Where(x => x != null).OrderBy(y => Path.GetFileName(y.GetPathString())).ToList();</code></pre>
+            
+            <pre><code>TODO: Show screenshot of console when scanning is done</code></pre>
+            
+            <h1>CommandQueryHandler</h1>
+            <p>The CommandQueryHandler is much simpler and is only intended to find and execute premade commands.</p>
+            
+            <button class="showCodeButton" onClick="OnShowCodeButtonPressed('showCommandCodeText', 'commandQueryHandlerCode')">
+				<p class="showCodeText" id="showCommandCodeText">Show Code</p>
+			</button>
+            
+            <pre class="code" id="commandQueryHandlerCode"><code>
+namespace QEWL
+{
+    public class CommandQueryHandler : QueryHandler
+    {
+        private Dictionary&lt;string, Command&gt; _commands = new Dictionary&lt;string, Command&gt;();
+
+        public CommandQueryHandler(MainWindow mainWindow)
+            : base(mainWindow)
+        {
+            /* Only use lowercases for command keys! */
+            _commands.Add("/scan", new ScanCommand());
+            _commands.Add("/prefs", new PrefsCommand());
+            _commands.Add("/shutdown", new ShutdownCommand());
+        }
+
+        protected override void OnScan()
+        {
+
+        }
+        
+        protected override void OnQuery(string text)
+        {
+            UIResults results = new UIResults();
+            foreach (KeyValuePair&lt;string, Command&gt; cmd in _commands)
+            {
+                results.Add(new UIResultItem("Images/CommandIcon.png", cmd.Key, cmd.Value.Description));
+            }
+
+            ShowResults(results, text);
+            QueryEnd(results, text);
+        }
+        
+        protected override bool OnConfirmed(UIResultItem result)
+        {
+            string text = result.ResultName.ToLower();
+            if (_commands.ContainsKey(text))
+            {
+                _commands[text].Execute();
+                return true;
+            }
+            else
+            {
+                Log.Warning(string.Format("Command {0} not found, no such command exists", text));
+                return false;
+            }
+        }
+    }
+}
+            </code></pre>
+            
+            <pre><code>TODO: Show video of a command</code></pre>
+            
+            <h1>WebQueryHandler</h1>
+            <p>This is planned for the future, when a prefix is added to the query, the web will be searched using the search engine of the user's choice.</p>
+            
+            <h1>Preferences</h1>
+            <p>The preferences window can be accessed using the /prefs command. It opens the following window:
+            </p>
+            
+            <pre><code>TODO: Show preferences window screenshot</code></pre>
+            
+            <p>Preferences are serialized and deserialized using XML.</p>
+            
+            
+		</div>
 	</div>
 	</section>
 </div>
 
 
 <body>
+
+<script>
+	function OnShowCodeButtonPressed(buttonTextId, codeId)
+	{
+		ToggleElement(codeId);	
+		var code = document.getElementById(codeId);
+		var buttonText = document.getElementById(buttonTextId);
+		
+		if(code.style.display == "none")
+		{
+			buttonText.innerHTML = "Show Code";
+		}
+		else if(code.style.display == "block")
+		{
+			buttonText.innerHTML = "Hide Code";
+		}
+	}
+	
+	function ToggleElement(id) 
+	{
+		var element = document.getElementById(id);
+		var state = element.style.display;
+
+		if(state == "block") 
+		{
+			element.style.display = "none";
+		}
+		else 
+		{
+			element.style.display = "block";
+		}
+	}
+</script>
 </body>
 </html>

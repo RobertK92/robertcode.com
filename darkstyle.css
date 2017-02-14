@@ -181,6 +181,10 @@ body {
 	background-image: url(images/goap1.png);
 }
 
+#contentItemGOAP:hover {
+	background-image: url(images/goap2.png);
+}
+
 #contentItemBoltstorm {
 	background-image: url(images/boltstorm1.png);
 }
@@ -194,7 +198,11 @@ body {
 }
 
 #contentItemRenderer {
-	background-image: url(images/renderer1.png);
+	background-image: url(images/helicopter2.png);
+}
+
+#contentItemRenderer:hover {
+	background-image: url(images/helicopter3.png);
 }
 
 .contentGridItemTitle {
