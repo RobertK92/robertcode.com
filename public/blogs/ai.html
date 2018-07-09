@@ -1,0 +1,316 @@
+<html>
+    
+    <head>
+    <meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<meta name="description" content="Your description">
+	<meta name="author" content="Robert Knoester">
+	<meta name="generator" content="Hugo 0.42.2" />
+    <title>Robert Knoester - AI</title>
+    
+	<!-- Stylesheets -->
+
+   
+        
+	<link rel="stylesheet" href="http://example.org/css/main.css"/>
+	
+    
+        
+	<!--[if lte IE 8]><script src="js/ie/html5shiv.js"></script><![endif]-->
+    <link rel="stylesheet" href="../css/main.css" />
+    <!--[if lte IE 9]><link rel="stylesheet" href="css/ie9.css" /><![endif]-->
+    <!--[if lte IE 8]><link rel="stylesheet" href="css/ie8.css" /><![endif]-->
+
+
+	<!-- Custom Fonts -->
+	<link href="http://example.org/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="shortcut icon" type="image/x-icon" href="http://example.org/favicon.ico">
+	<link rel="icon" type="image/x-icon" href="http://example.org/favicon.ico">
+	
+<link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        
+<link rel="stylesheet" href="/css/hljs-dracula.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/languages/go.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        
+	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
+	<script src="js/ie/html5shiv.js"></script>
+	<script src="js/ie/html5shiv.jsrespond.min.js"></script>
+	<![endif]-->
+    </head>
+    <body>
+        
+        <div id="wrapper">
+
+			<!-- Header -->
+            <header id="header" class="alt">
+                <strong>&nbsp; artificial intelligence</strong>
+            </header>
+            
+        </div>
+        
+        <style>
+            #blogpost-banner
+            {
+                
+                background-image: url(../img/ai/ai-banner.png);
+                position: relative;
+                height: 75vh;
+                background-size: cover;
+                display: flex;
+                -moz-align-items: center;
+		        -webkit-align-items: center;
+		        -ms-align-items: center;
+                align-items: center;
+                width: 100%;
+                opacity: 0.70;
+            }
+        </style>
+        
+        <section id="blogpost-banner" class="major">
+            
+        </section>
+        
+        <div id="main">
+            <section id="two">
+                <div class="inner">
+                    <header class="major">
+                        <h2>The Project</h2>
+                    </header>
+                    <p>This project aims to simulate the behaviour of a crowd at an airport. Visitors have certain utility curves that describe a desire to do an action over a variable (e.g. time). The planner will then construct a path of preconditions that will eventually lead to the completion of the agents goal. Actions are things like: go to the toilet, buy food/drink, check in, go through customs, board plane, etc.</p>
+                    <iframe width="1160" height="682" src="https://www.youtube.com/embed/VHFnPRWD3Kg" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    <p></p>
+                    <header class="major">
+                        <h2>Goal Oriented Action Planner (GOAP)</h2>
+                    </header>
+                    <p>While we were planning the technical design for this project, we initially wanted to use behaviour trees. However, we discovered that a GOAP will be much more flexible for quickly adding new tasks for the agents. a GOAP is also much easier to manage if the amount of tasks grow, because a task can simply be added to the system without the need of changing the structure of a behaviour tree since the tree will be created dynamically.</p>
+
+                    <p>The structure is designed as follows:
+                    There are Agents, All agents have their own Planner which determines the agents current Action.
+                    Actions have Preconditions which are also actions. (e.g. a precondition for boarding the plane would be checking in and going through customs).</p>
+
+                    <p>In the code below you can see that boarding the plane requires certain other actions: (!HasBoardedPlane, HasCheckedIn and HasSecurityCheck).</p>
+        
+<pre><code>public class BoardPlaneAction : GoapAction
+{
+    public override int Cost { get { return 10; } }
+    public override float Duration { get { return 20f; } }
+
+    private GoapGoal[] _preconditions = new GoapGoal[]
+    {
+    state => !state.HasBoardedPlane,
+
+    state => state.HasCheckedIn,
+    state => state.HasSecurityCheck,
+    };
+
+    public override GoapGoal[] Preconditions { get { return _preconditions; } }
+
+    public override bool Init(GoapAgent agent)
+    {
+        if (IsInitialized) return true;
+
+        var flight = GetComponent&lt;Agent&gt;().flight;
+        _target = Airport.Instance.GetGate(flight);
+
+        if (_target == null)
+            return false;
+
+        IsInitialized = true;
+        _currentDuration = Duration;
+
+        return true;
+    }
+
+    public override void ChangeState(GoapState state)
+    {
+        state.HasBoardedPlane = true;
+    }
+
+    public override void NotifyAirport()
+    {
+        Airport.Instance.Register(_target, GetComponent&lt;Agent&gt;());
+    }
+
+    public override void Reset()
+    {
+        _currentDuration = 0f;
+        IsInitialized = false;
+    }
+}</code></pre>
+            <p>The actions need to be created once and can then automatically be used by the planner. This is especially nice because the actions don&rsquo;t have any intertwined relationship with eachother (like behaviour trees do).</p>
+
+<p>Available actions:</p>
+
+<p><img src="../img/ai/goapActions.png" alt="Image_ActionScriptList" /></p>
+
+<p>The code below shows how the planner creates a plan. It first builds a graph (or tree) recursively. It will all the paths that lead to the target goal (action).
+Once the graph is build, the nodes (which contain the actions) can be traversed back (using cost) to find the most efficient way of reaching the target action.</p>
+
+<pre><code>/// &lt;summary&gt;
+/// Creates a plan of actions for a specified goal. Returns true if a plan was found.
+/// &lt;/summary&gt;
+/// &lt;param name="currentState">The current state of the agent.&lt;/param&gt;
+/// &lt;param name="airportState">The current state of the airport.&lt;/param&gt;
+/// &lt;param name="actionOutput"&gt;Ouputs the plan of actions for the specified goal. Should be empty&lt;/param&gt;
+/// &lt;param name="goals"&gt;The end goals of the plan.&lt;/param&gt;
+/// &lt;returns&gt;Returns true if a plan was found.&lt;/returns&gt;
+public bool MakePlan(GoapAgent agent, Stack&lt;GoapAction&gt; actionOutput, GoapGoal[] goals)
+{
+    var node = new Node(null, agent.State, null, 0);
+    var leaves = new List&lt;Node&gt;();
+    var actions = _availableActions.ToList();
+    foreach (var action in actions) action.Reset();
+
+    var foundPlan = BuildGraph(node, leaves, actions, goals);
+    if (!foundPlan) return false;
+
+    var n = leaves.Aggregate((Node)null, (acc, item) => acc == null || acc.cost > item.cost ? item : acc);
+    while (n != null)
+    {
+        if (n.action != null)
+            actionOutput.Push(n.action);
+
+        n = n.parent;
+    }
+
+    return true;
+}
+
+/// &lt;summary&gt;
+/// Creates all available plans for the specified goals.
+/// &lt;/summary&gt;
+/// &lt;param name="parent"&gt;The parent node.&lt;/param&gt;
+/// &lt;param name="leaves"&gt;A list with all possible plans. Should be empty when passed.&lt;/param&gt;
+/// &lt;param name="availableActions"&gt;All the available actions.&lt;/param&gt;
+/// &lt;param name="goals"&gt;The goals of the plan.&lt;/param&gt;
+/// &lt;returns&gt;&lt;/returns&gt;
+private bool BuildGraph(Node parent, List&lt;Node&gt; leaves, List&lt;GoapAction&gt; availableActions, GoapGoal[] goals)
+{
+    bool success = false;
+
+    foreach (var action in availableActions)
+    {
+        if (action.Preconditions.All(x => x(parent.state)))
+        {
+            var actionState = new GoapState();
+            action.ChangeState(actionState);
+            var affectedState = actionState.MergeState(parent.state);
+            var node = new Node(parent, affectedState, action, parent.cost + action.Cost);
+
+            if (goals.All(x => x(affectedState)))
+            {
+                leaves.Add(node);
+                success = true;
+            }
+            else
+            {
+                var actions = new List&lt;GoapAction&gt;(availableActions.Where(x => x != action));
+                if (BuildGraph(node, leaves, actions, goals))
+                    success = true;
+            }
+        }
+    }
+
+    return success;
+}</code></pre>
+
+<h2 id="utility-theory">Utility Theory</h2>
+
+<p>Utility Theory is basically a concept that determines how important an action is for a particular agent at a certain time.
+So Utility Theory determines what action needs to be done, while the GOAP determines how that action can be done.</p>
+
+<p>The image below shows the utility of a random agent.</p>
+
+<p><img src="../img/ai/utility1.png" alt="Image_UtilityAgent" /></p>
+
+<p>This agent has 5 different utilities (trail-actions that it can find important). With a trail-action I mean a pre-determined &ldquo;goal&rdquo; that can have preconditions but is essentially an end-goal instead of a substep. (e.g. the agents wants to board the plane, checking-in and going through customs is not what he wants, it something he has to do to reach the goal).</p>
+
+<pre><code>public enum LongTermGoal
+{
+    None,
+    Eat,
+    Drink,
+    Toilet,
+    TakeCover,
+    BoardPlane,
+}</code></pre>
+
+<p>The Utility Agent will notify the Goap Agent when a new goal has been assigned, the planner can then re-calculate the plan.</p>
+
+<pre><code>private void OnLongTermGoalHasChanged(LongTermGoal goal)
+{
+    switch (goal)
+    {
+        case LongTermGoal.None:
+            goapAgent.AssignGoals(null, LongTermGoal.None);
+            navAgent.SetDestination(transform.position);
+            break;
+        case LongTermGoal.Eat:
+            goapAgent.State.HasEaten = false;
+            goapAgent.AssignGoals(new GoapGoal[]
+            {
+                state => state.HasEaten
+            }, goal);
+            break;
+        case LongTermGoal.Drink:
+            goapAgent.State.HasDrunk = false;
+            goapAgent.AssignGoals(new GoapGoal[]
+            {
+                state => state.HasDrunk
+            }, goal);
+            break;
+        case LongTermGoal.Toilet:
+            goapAgent.State.HasUsedToilet = false;
+            goapAgent.AssignGoals(new GoapGoal[]
+            {
+                state => state.HasUsedToilet
+            }, goal);
+            break;
+        case LongTermGoal.TakeCover:
+            break;
+        case LongTermGoal.BoardPlane:
+            goapAgent.State.HasBoardedPlane = false;
+            goapAgent.AssignGoals(new GoapGoal[]
+            {
+                state => state.HasBoardedPlane
+            }, goal);
+            break;
+        default:
+            break;
+    }
+}</code></pre>
+
+<p>The amount of &ldquo;Utility&rdquo; is determined per goal using a curve.
+The curve represents how important (how much utility) the goal has over a value between 0 and 1. This value can differ per action . (e.g. For the boarding plane action (curve shown below), the value represents the current time devided by the departure time).</p>
+
+<p><img src="../img/ai/boardplaneCurve.png" alt="Image_BoardplaneCurve" /></p>
+
+<p>As you can see, boarding the plane is a very unimportant action when it&rsquo;s too early to board. But at a certain time (x amount of minutes before departure) it becomes important very quickly. At a certain time before departures it becomes 1.</p>
+
+<p>The curve below shows the utility curve for the toilet action.</p>
+
+<p><img src="../img/ai/wcCurve.png" alt="Image_WcCurve" /></p>
+
+<p>This curve is different because you initially need to go a little bit and then your need increases more steadily over time.</p>
+
+<p>I have build in a priority system on top of the utility system so that certain actions will always be chosen over others if their utility value is equal (you don&rsquo;t want to mis your plane because you have to go to the toilet).</p>
+
+<h2 id="award">Award</h2>
+
+<p>With this project, we won the code award for our year.</p>
+
+<p><img src="../img/ai/prize1.png" alt="Image_Award" /></p>
+                </div>
+            </section>
+        </div>
+        
+    </body>
+</html>
