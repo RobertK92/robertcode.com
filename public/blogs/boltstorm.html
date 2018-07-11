@@ -1,0 +1,264 @@
+<html>
+    
+    <head>
+    <meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<meta name="description" content="Your description">
+	<meta name="author" content="Robert Knoester">
+	<meta name="generator" content="Hugo 0.42.2" />
+    <title>Robert Knoester - AI</title>
+    
+	<!-- Stylesheets -->
+
+   
+        
+	<link rel="stylesheet" href="http://example.org/css/main.css"/>
+	
+    
+        
+	<!--[if lte IE 8]><script src="js/ie/html5shiv.js"></script><![endif]-->
+    <link rel="stylesheet" href="../css/main.css" />
+    <!--[if lte IE 9]><link rel="stylesheet" href="css/ie9.css" /><![endif]-->
+    <!--[if lte IE 8]><link rel="stylesheet" href="css/ie8.css" /><![endif]-->
+
+
+	<!-- Custom Fonts -->
+	<link href="http://example.org/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="shortcut icon" type="image/x-icon" href="http://example.org/favicon.ico">
+	<link rel="icon" type="image/x-icon" href="http://example.org/favicon.ico">
+	
+<link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        
+<link rel="stylesheet" href="/css/hljs-dracula.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/languages/go.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        
+        
+	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
+	<script src="js/ie/html5shiv.js"></script>
+	<script src="js/ie/html5shiv.jsrespond.min.js"></script>
+	<![endif]-->
+    </head>
+    <body>
+        
+        <div id="wrapper">
+
+			<!-- Header -->
+            <header id="header" class="alt">
+                <strong>&nbsp; bolt storm</strong>
+            </header>
+            
+        </div>
+        
+        <style>
+            #blogpost-banner
+            {
+                
+                background-image: url(../img/bs/bs-banner.png);
+                position: relative;
+                height: 75vh;
+                background-size: cover;
+                display: flex;
+                -moz-align-items: center;
+		        -webkit-align-items: center;
+		        -ms-align-items: center;
+                align-items: center;
+                width: 100%;
+                opacity: 0.70;
+            }
+        </style>
+        
+        <section id="blogpost-banner" class="major">
+            
+        </section>
+        
+        <div id="main">
+            <section id="two">
+                <div class="inner">
+                    <header class="major">
+                        <h2>The Project</h2>
+                    </header>
+                    <p>Bolt Storm is a dungeon crawler RPG with RTS elements, created by a 25 man team. I was part of the gameplay feature team together with 3 other programmers. I will exclusively cover the most important systems I have created. This game is created using Unreal Engine 4 in (mainly) C++.
+                    </p>
+                    <a href="http://dutchgameawards.nl/2017/bolt-storm/" title="Dutch Game Awards - Best Student Technical Achievement 2017"><img src="../img/bs/dga-logo.png"></a>
+                    <a href="https://www.indiedb.com/games/bolt-storm" title="View Bolt Storm on Indie DB"><img src="https://button.indiedb.com/popularity/medium/games/57407.png" alt="Bolt Storm"></a>
+                    <a href="http://kualitygames.com/boltstorm/">Game Website URL</a>
+                    <br> <br>
+                    <iframe width="854" height="480" src="https://www.youtube.com/embed/PeBGBjCstB8" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                </div>
+            </section>
+            <section id="two">
+                <div class="inner">
+                <header class="major">
+                    <h2>Items & Looting</h2>
+                </header>
+                    <p>Initially, only weapons and gold could be found and looted. However, I decided to create the system in a flexible way so we could have other types of items later if necesery. Later on we added armor recipes, potions and even treasure chests could be added as special lootables.</p>
+                    <p>An <b>Item</b> is a data asset that consists of some basic essential variables needed for every <b>Lootable</b>. A lootable can be spawned using an item. Another motivation for the item data asset was the fact that we would have an inventory (the inventory was removed later for design reasons).</p>
+                    <p>Items have <b>UseAction</b> which determines what should happen when an item is used. For example: when a weapon is looted, the weapon item is used and the use action in that case will equip the weapon. When it's a health potions, the use action will add health to the player. This way we had the option to store the item in the inventory so it could be used from there as well.
+                    </p>
+                    <p>A <b>Lootable</b> is an actor that's spawned using a given item. When the king is in range of a lootable, a UI popup will appear in world space giving some information about the item along with a 3D preview.</p>
+                    <img src="../img/bs/lootable-gif.gif" width="80%">
+                    <br> <br>
+                    <p>Lootables and items can be converted from, and to, eachother.</p>
+                </div>
+            </section>
+            <section id="two">
+                <div class="inner">
+                <header class="major">
+                    <h2>UI System</h2>
+                </header>
+                    <p>We decided the UI in the game had to be more consistent and easier to manage. I designed a system in such a way that it would be flexible enough to support our needs but managed in a way that it's easy to use and hard to missuse. 
+                    </p>
+                    <p>From then on, the UI would consist of; <b>Windows</b>, <b>Popups</b>, <b> Tooltips</b> and one <b>HUD</b>. All of these exist on a stack (called the <b>WidgetStack</b>). I implemented a couple of rules: Windows can be created on top of windows but never on top of popups, popups can be created on top of anything same as tooltips. All of these inherit from a <b>UIObject</b> base class. 
+                    </p>
+<pre><code>
+/**
+*	Creates a window and pushes it onto the widget stack
+*	@param aUIType The window type to create
+*	@param aHideHud (optional) Should the hud be hidden while this window exists?
+*/
+UFUNCTION(BlueprintCallable, Category = "UI System|Manager")
+UBsUIWindow* OpenWindow(TSubclassOf&lt;UBsUIWindow&gt; aUIType, bool aHideHud = true);
+
+/**
+*	Creates a popup and pushes it onto the widget stack*
+*	@param aUIType The popup type to create
+*/
+UFUNCTION(BlueprintCallable, Category = "UI System|Manager")
+UBsUIPopup* CreatePopup(TSubclassOf&lt;UBsUIPopup&gt; aUIType);
+
+/** 
+*	Creates a tooltip and optionally attaches it to a UI window, uses 1 above the hud layer if no parent window is given.
+*	Tooltips are not pushed to the stack 
+*	@param aUIType The tooltip to create
+*	@param aParentWindow The window the tooltip should be parented to, tooltips are managed via windows
+*/
+UFUNCTION(BlueprintCallable, Category = "UI System|Manager")
+UBsUITooltip* CreateTooltip(TSubclassOf&lt;UBsUITooltip&gt; aUIType, UBsUIWindow* aParentWindow);
+
+/**
+*	Toggles the hud visible/hidden
+*/
+UFUNCTION(BlueprintCallable, Category = "UI System|Manager")
+void ToggleHud();
+
+/** 
+*	Pops the top ui object from the stack (LiFo), this is the only legal way of removing windows and popups (tooltips have to be removed
+*	@param aDepth (optional) How deep we should pop the widget stack from top to bottom
+*/
+UFUNCTION(BlueprintCallable, Category = "UI System|Manager")
+void PopUI(int32 aDepth = 1);
+</code></pre>
+                    <p>The <b>UIManager</b> contains all functionality for creating and removing widgets and can be accessed globally. The UIManager contains functions for creating new windows, popups, tooltips and also a method called <b>PopUI</b> which is the only valid way to remove a UIObject. These methods ensure that new UI is always created 1 layer on top of the top widget (and becomes the top widget). The Pop method will pop an x amount of widgets from the stack with a given depth. Transition animations will consistently occur when a UIObject is added or popped. The HUD is always the last widget on the stack and cannot be popped (only hidden).</p>
+<pre><code>
+void ABsUIManager::PopUI(int32 aDepth)
+{
+	for (int i = 0; i &lt; aDepth; i++)
+	{
+		if (mUIObjectStack.Num() &lt;= 1)
+		{
+			printWarning("Failed to pop UI: only 1 ui object left on the stack (the hud)");
+			return;
+		}
+
+		UBsUIObjectBase* tPopped = mUIObjectStack.Pop();
+		if (tPopped->IsA&lt;UBsUIWindow&gt;())
+		{
+			mCurrentWindowLayer--;
+
+			if (mHudHiders.Contains(tPopped))
+			{
+				mHudHiders.Remove(tPopped);
+				if (mHudHiders.Num() == 0)
+				{
+					mHud->SetVisibility(ESlateVisibility::HitTestInvisible);
+				}
+			}
+		}
+		else if (tPopped->IsA&lt;UBsUIPopup&gt;())
+		{
+			mCurrentPopupLayer--;
+		}
+
+		tPopped->OnUIClosed.Broadcast();
+		tPopped->OnUIClose();
+		mOutFaders.Add(tPopped);
+
+		/* Temporary disable input during fade out */
+		mPlayerController->SetInputMode(FInputModeGameOnly());
+		if (BS_VALID(mPlayer))
+		{
+			mPlayer->DisableInput(mPlayerController);
+		}
+		mPlayerController->ClearActionBindings();
+		
+	}
+}
+</code></pre>
+                    <p>Because popups are usually very similar to eachother, I created some static utility methods in order to easily add new popups with one function call.
+                    </p>
+                    <img src="../img/bs/popup-example-bp.PNG"> <img src="../img/bs/popup-example-exit.PNG">
+                    <br> <br>
+                    <p>I also created a system that would allow the user to easily add a <b>HotkeyButton</b> to a widget. The hotkey button has a "Key" variable for keyboard/mouse and gamepad. When the variables are set in the editor, the button can then be activated using keyboard and gamepad hotkeys for quick navigation by the player. The button image and input binding will automatically change based on the key variables as well. </p>
+                    <img src="../img/bs/hotkey-button.PNG">
+                    <br> <br>
+                    <p>Using the new UI system, I've created alot of the UI in the game. As an example of how I use UMG I will show the <b>Settings</b> menu.
+                    </p>
+                    <img src="../img/bs/settings-ui.PNG" width="68%">
+                    </div>
+            </section>
+            <section id="two">
+                <div class="inner">
+                <header class="major">
+                    <h2>Army Barracks</h2>
+                </header>
+                <p>The <b>Army Barracks</b> is the place where the king can purchase new troops to be added to his army. The last iteration uses the new, previously mentioned UI system. It also features a 3D preview of the entire army so the player has an overview of what he will be fighting with.
+                </p>
+                <p> The barracks is an actor that uses the <b>Interactable</b> interface that allows to easily and consistently create interaction of the king with an object. The interface will show the interact button when in range and an outline of the object. This interface is also used by the item shop, the armory, various gameplay elements in the game such as levers and NPC's.
+                </p>
+                <img src="../img/bs/army-barracks-interact.PNG" width="40%"> <br> <br>
+                <p>In the barracks, the player can select cards and get a preview of the unit and it's stats and abilities. The cards are created and added dynamically using a data asset. This allows designers to easily create new units and add them to the barracks.
+                </p>
+                <img src="../img/bs/army-barracks-unit.PNG" width="51.5%"><img src="../img/bs/army-barracks-unit-data.PNG" width="40%"><br> <br>
+                <p> The prices in the barracks are determined by a datatable that contains information about every unit. The price's are designed in such a way that the more you buy of a certain type of unit, the more that unit will cost (this is done so the player would have a wider variety of units in it's army). The increase in price is different per unit and is determined using a curve.
+                </p>
+                <img src="../img/bs/army-barracks-prices.PNG" width="50%"><img src="../img/bs/army-barracks-pricetable.PNG" width="50%"> <br> <br>
+                <p>Using a hotkey button, the player can toggle between the army overview and the unit view. The army overview places the units in formation and adds/removes them based on the players shopping list.</p>
+                <img src="../img/bs/army-barracks-army.PNG" width="68%">
+                </div>
+            </section>
+        </div>
+        
+<!-- Collpasible js -->    
+<script>
+var coll = document.getElementsByClassName("collapsible");
+var i;
+
+for (i = 0; i < coll.length; i++) 
+{
+    coll[i].addEventListener("click", function() 
+    {
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        if (content.style.display === "block") 
+        {
+            content.style.display = "none";
+        } 
+        else 
+        {
+            content.style.display = "block";
+        }
+        
+    });
+}
+</script>
+        
+    </body>
+</html>

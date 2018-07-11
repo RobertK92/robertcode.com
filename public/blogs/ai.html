@@ -38,6 +38,7 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/languages/go.min.js"></script>
 <script>hljs.initHighlightingOnLoad();</script>
         
+        
 	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
 	<!--[if lt IE 9]>
@@ -97,7 +98,8 @@
                     Actions have Preconditions which are also actions. (e.g. a precondition for boarding the plane would be checking in and going through customs).</p>
 
                     <p>In the code below you can see that boarding the plane requires certain other actions: (!HasBoardedPlane, HasCheckedIn and HasSecurityCheck).</p>
-        
+                    
+<button class="collapsible">Code Snippet</button>
 <pre><code>public class BoardPlaneAction : GoapAction
 {
     public override int Cost { get { return 10; } }
@@ -154,6 +156,7 @@
 <p>The code below shows how the planner creates a plan. It first builds a graph (or tree) recursively. It will all the paths that lead to the target goal (action).
 Once the graph is build, the nodes (which contain the actions) can be traversed back (using cost) to find the most efficient way of reaching the target action.</p>
 
+<button class="collapsible">Code Snippet</button>
 <pre><code>/// &lt;summary&gt;
 /// Creates a plan of actions for a specified goal. Returns true if a plan was found.
 /// &lt;/summary&gt;
@@ -221,6 +224,8 @@ private bool BuildGraph(Node parent, List&lt;Node&gt; leaves, List&lt;GoapAction
 
     return success;
 }</code></pre>
+                    
+
 
 <h2 id="utility-theory">Utility Theory</h2>
 
@@ -233,6 +238,7 @@ So Utility Theory determines what action needs to be done, while the GOAP determ
 
 <p>This agent has 5 different utilities (trail-actions that it can find important). With a trail-action I mean a pre-determined &ldquo;goal&rdquo; that can have preconditions but is essentially an end-goal instead of a substep. (e.g. the agents wants to board the plane, checking-in and going through customs is not what he wants, it something he has to do to reach the goal).</p>
 
+<button class="collapsible">Code Snippet</button>
 <pre><code>public enum LongTermGoal
 {
     None,
@@ -245,6 +251,7 @@ So Utility Theory determines what action needs to be done, while the GOAP determ
 
 <p>The Utility Agent will notify the Goap Agent when a new goal has been assigned, the planner can then re-calculate the plan.</p>
 
+<button class="collapsible">Code Snippet</button>
 <pre><code>private void OnLongTermGoalHasChanged(LongTermGoal goal)
 {
     switch (goal)
@@ -311,6 +318,30 @@ The curve represents how important (how much utility) the goal has over a value 
                 </div>
             </section>
         </div>
+        
+<!-- Collpasible js -->    
+<script>
+var coll = document.getElementsByClassName("collapsible");
+var i;
+
+for (i = 0; i < coll.length; i++) 
+{
+    coll[i].addEventListener("click", function() 
+    {
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        if (content.style.display === "block") 
+        {
+            content.style.display = "none";
+        } 
+        else 
+        {
+            content.style.display = "block";
+        }
+        
+    });
+}
+</script>
         
     </body>
 </html>

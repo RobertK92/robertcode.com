@@ -1769,19 +1769,42 @@
 		padding: 0.5em 0 0.5em 2em;
 	}
 
+    .collapsible {
+        cursor: pointer;
+        width: 70%;
+        border: none;
+        text-align: left;
+        outline: none;
+        font-size: 15px;
+    }
+
+    .active, .collapsible:hover {
+        background-color: #555;
+    }
+
+    .button-content {
+        padding: 0 18px;
+        display: none;
+        overflow: hidden;
+        background-color: #f1f1f1;
+    }
+
 	code {
 		background: rgba(212, 212, 255, 0.035);
 		font-family: "Courier New", monospace;
-		font-size: 0.75em;
+		font-size: 0.50em;
 		margin: 0 0.25em;
+        margin-bottom: 0.50em;
 		padding: 0.25em 0.65em;
 	}
 
 	pre {
-        
+        width: 70%;
+        border: solid 1px;
+        border-color: rgba(100, 100, 100, 100);
 		-webkit-overflow-scrolling: touch;
 		font-family: "Courier New", monospace;
-		font-size: 0.75em;
+		font-size: 0.50em;
 		margin: 0 0 2em 0;
 	}
 
@@ -2784,6 +2807,7 @@
 
 			.tiles article .image {
 				display: none;
+                
 			}
 
 			.tiles article header {
@@ -2859,6 +2883,7 @@
 
 			.tiles article:nth-child(6n - 5):before {
 				background-color: #6fc3df;
+                
 			}
 
 			.tiles article:nth-child(6n - 4):before {
@@ -2880,6 +2905,8 @@
 			.tiles article:nth-child(6n):before {
 				background-color: #87c5a4;
 			}
+            
+        
 
 		@media screen and (max-width: 1280px) {
 
