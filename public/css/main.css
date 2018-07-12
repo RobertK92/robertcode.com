@@ -1,6 +1,7 @@
 @import url(font-awesome.min.css);
 @import url("https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,300italic,600,600italic");
 
+
 /* Reset */
 
 	html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
@@ -1799,12 +1800,12 @@
 	}
 
 	pre {
-        width: 70%;
+        width: 100%;
         border: solid 1px;
         border-color: rgba(100, 100, 100, 100);
 		-webkit-overflow-scrolling: touch;
 		font-family: "Courier New", monospace;
-		font-size: 0.50em;
+		font-size: 1.20em;
 		margin: 0 0 2em 0;
 	}
 
@@ -1841,6 +1842,7 @@
 
 	section.special, article.special {
 		text-align: center;
+        
 	}
 
 	header.major {
@@ -1849,6 +1851,7 @@
 		width: -ms-max-content;
 		width: max-content;
 		margin-bottom: 2em;
+        
 	}
 
 		header.major > :first-child {

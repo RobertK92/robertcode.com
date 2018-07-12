@@ -30,14 +30,8 @@
 	<link rel="shortcut icon" type="image/x-icon" href="http://example.org/favicon.ico">
 	<link rel="icon" type="image/x-icon" href="http://example.org/favicon.ico">
 	
-<link rel="stylesheet"
-      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-        
-<link rel="stylesheet" href="/css/hljs-dracula.css">
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/languages/go.min.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>
-        
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+    <link rel="stylesheet" href="/css/code-theme.css">
         
 	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -87,9 +81,9 @@
                     </header>
                     <p>I wanted to make  tool that could find any file or folder on any of my drives. The windows built-in search is terrible at doing this, it only finds a fraction of the files. For this project I decided to use C# as a language and WPF for the UI. I use global keyboard hooks so the window can be shown at any time using the Ctrl+Space hotkey (can be changed in prefs).
                     </p>
-                    <video width="800" height="400" controls>
-                        <source src="../img/wst/wst-video.mp4" type="video/mp4">
-                    </video>
+                    <div style="position:relative;padding-top:45.0%;">
+                        <iframe src="../img/wst/wst-video.mp4" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="position:absolute;top:0;left:0;width:89%;height:100%;"></iframe>
+                    </div>
                 </div>
             </section>
             <section id="two">
@@ -102,7 +96,7 @@
                     <img src="../img/wst/wst-disks.png"> <br><br>
                     <p>The scan code runs on a seperate thread so we don't freeze the main thread and the UI. The drives are then enumerated and scanned in parallel as well.
                     </p>
-<pre><code>
+<pre class="prettyprint"><code>
 protected override void OnScan()
 {
     recDepth = 0;
@@ -138,7 +132,7 @@ protected override void OnScan()
 </code></pre>
                     <p>The root directory of the drive is passed to the ScanSubDirsAndFiles function which is recursive and attempts to scan the drives in parallel aswell.
                     </p>
-<pre><code>
+<pre class="prettyprint"><code>
 private void ScanSubDirsAndFiles(DirectoryInfo parentDir, bool isRoot = false)
 {
     try
@@ -192,7 +186,7 @@ private void ScanSubDirsAndFiles(DirectoryInfo parentDir, bool isRoot = false)
                     </p>
                     <p>When a search query is performed by the user (he or she types characters in the text box), the following code will run.
                     </p>
-<pre><code>
+<pre class="prettyprint"><code>
 protected override void OnQuery(string query)
 {
     if (IsScanning)
@@ -244,7 +238,7 @@ protected override void OnQuery(string query)
 </code></pre>
                     <p>The FindClosestResultIndex method is what does all the work here. It will recursively try to find the index in the BigResultList that matches closest to the given search query. It will give results while typing, so even when only a couple of characters are typed in, it will usually output a list of good results.
                     </p>
-<pre><code>
+<pre class="prettyprint"><code>
 private int FindClosestResultIndex(string query, int startIndex = 0, int substringLength = 1, int closest = -1)
 {
     if (substringLength > query.Length)

@@ -30,14 +30,8 @@
 	<link rel="shortcut icon" type="image/x-icon" href="http://example.org/favicon.ico">
 	<link rel="icon" type="image/x-icon" href="http://example.org/favicon.ico">
 	
-<link rel="stylesheet"
-      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-        
-<link rel="stylesheet" href="/css/hljs-dracula.css">
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/languages/go.min.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>
-        
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+    <link rel="stylesheet" href="/css/code-theme.css"> 
         
 	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -87,9 +81,9 @@
                     </header>
                     <p>I initially wrote this plugin to easily manage the flow of UI screens for a game we were working on at university, but it in essence, it is just a generic node graph editor that can be used for all sorts of purposes. The basic idea is that the user can create nodes and on those nodes, the user can create any number of events that can be hooked up to other nodes.
                     </p>
-                    <video width="700" height="400" controls>
-                        <source src="../img/nge/nodegrapheditor.mp4" type="video/mp4">
-                    </video>
+                    <div style="position:relative;padding-top:50.0%;">
+                        <iframe src="../img/nge/nodegrapheditor.mp4" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="position:absolute;top:0;left:0;width:89%;height:100%;"></iframe>
+                    </div>
                 </div>
             </section>
             <section id="two">
@@ -101,7 +95,7 @@
                     </p>
                     <p>All the code shown below is generated.
                     </p>
-<pre><code>public class UIFlowGraph : Singleton&lt;UIFlowGraph&gt;
+<pre class="prettyprint"><code>public class UIFlowGraph : Singleton&lt;UIFlowGraph&gt;
 {
     public enum NodeId
     {
@@ -228,12 +222,12 @@
 </code></pre>
                     <p>This singleton can easily be used to transition between states. The state machine will always begin on the turqouise “DefaultNode”, so only OnBegin is available to be fired initially.
                     </p>
-<pre><code>UIFlowGraph.Instance.OnFired += OnNodeFired;
+<pre class="prettyprint"><code>UIFlowGraph.Instance.OnFired += OnNodeFired;
 UIFlowGraph.Instance.NextNode(UIFlowGraph.NodeEventId.OnBegin);
 </code></pre>
                     <p>Because I designed the system to be as generic as possible, it is not directly tied to UI. The user must determine what happens in the OnFired event handler as shown below.
                     </p>
-<pre><code>private void OnNodeFired(UIFlowGraph.NodeId screenId)
+<pre class="prettyprint"><code>private void OnNodeFired(UIFlowGraph.NodeId screenId)
 {
     UIScreen screen = m_Screens.Where(x => x.m_ScreenId == screenId).FirstOrDefault();
     if (screen == null)

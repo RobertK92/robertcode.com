@@ -14,8 +14,9 @@
    
         
 	<link rel="stylesheet" href="http://example.org/css/main.css"/>
-	
-    
+        
+	<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+    <link rel="stylesheet" href="/css/code-theme.css">
         
 	<!--[if lte IE 8]><script src="js/ie/html5shiv.js"></script><![endif]-->
     <link rel="stylesheet" href="../css/main.css" />
@@ -29,15 +30,6 @@
 	
 	<link rel="shortcut icon" type="image/x-icon" href="http://example.org/favicon.ico">
 	<link rel="icon" type="image/x-icon" href="http://example.org/favicon.ico">
-	
-<link rel="stylesheet"
-      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-        
-<link rel="stylesheet" href="/css/hljs-dracula.css">
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/languages/go.min.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>
-        
         
 	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -87,9 +79,9 @@
                     </header>
                     <p>This is a solo university project I worked on during year 4. I am using Unreal Engine 4 and C++ to implement a brawler-style multiplayer game. <br> <i>Please note that the game is still in a very early stage.</i>
                     </p>
-                    <video width="1000" height="400" controls>
-                        <source src="../img/bb/bb-game.mp4" type="video/mp4">
-                    </video>
+                    <div style="position:relative;padding-top:30.0%;">
+                        <iframe src="../img/bb/bb-game.mp4" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="position:absolute;top:0;left:0;width:89%;height:100%;"></iframe>
+                    </div>
                 </div>
             </section>
             <section id="two">
@@ -101,7 +93,7 @@
                     </p>
                     <p>Example of a Network method:
                     </p>
-<pre><code>
+<pre class="prettyprint"><code>
 void UBbNetwork::FindSessions()
 {
 	check(NetworkEventSequence);
@@ -135,7 +127,7 @@ void UBbNetwork::FindSessions()
 }
 </code></pre>
                     <p>Example of a MatchFinder method:</p>
-<pre><code>
+<pre class="prettyprint"><code>
 void UBbMatchFinder::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
 {
 	IOnlineSubsystem* Sub = IOnlineSubsystem::Get();
@@ -200,7 +192,7 @@ void UBbMatchFinder::OnJoinSessionComplete(FName SessionName, EOnJoinSessionComp
                     <p>For managing different character logic and animations I have created a <b>State Machine</b> in C++. The state machine is an actor component that can be used generically for any type of character. My character base class contains 2 state machine components, one for the lower body and one for the upper body. I will refer to these state machines as the primary and secondary state machine respectively.</p>
                     <p>The character base class registers it's states on BeginPlay. It will ask for a class that inherits from <b>CharacterState</b> and a uint8 <b>StateID</b>. The state class contains the gameplay logic for that particular state.</p>
                     
-<pre><code>
+<pre class="prettyprint"><code>
 /* Set default states */
 PrimaryStateMachine->SetDefaultStateId((uint8)EBbPrimaryCharacterStateId::PCSI_Idle);
 SecondaryStateMachine->SetDefaultStateId((uint8)EBbSecondaryCharacterStateId::SCSI_Idle);
@@ -219,7 +211,7 @@ SecondaryStateMachine->RegisterState(UBbSecondaryBuildState::StaticClass(), (uin
 </code></pre>
                     <p>A state activation can be requested by calling TryActivateState:
                     </p>
-<pre><code>
+<pre class="prettyprint"><code>
 EBbActivateStateResult UBbCharacterStateMachine::TryActivateState(const uint8 StateId, bool bIgnoreTransitionRules /*=false*/)
 {
 	if (StateLockers.Num() > 0)
@@ -275,7 +267,7 @@ EBbActivateStateResult UBbCharacterStateMachine::TryActivateState(const uint8 St
                     </p>
                     <p>The equipment of the character is managed by the <b>EquipmentManager</b> component which contains functionality for equiping and dropping weapons and armor. The methods are RPC's and work over the network. When a weapon is equipped, the weapon that was previously equipped is converted into a pickup and dropped in the world to be picked up again. 
                     </p>
-<pre><code>
+<pre class="prettyprint"><code>
 void UBbEquipmentManager::EquipWieldable(EBbWieldMode Slot, ABbWieldable* WieldableToEquip)
 {
 	if (WieldableToEquip == nullptr)
@@ -311,7 +303,7 @@ void UBbEquipmentManager::EquipWieldable(EBbWieldMode Slot, ABbWieldable* Wielda
                     </p>
                     <p>All melee weapons have a box component which size can be tweaked that I use in my box trace to determine if we hit something. I cache the transform of the previous frame and trace it to the transform of the current frame.
                     </p>
-<pre><code>
+<pre class="prettyprint"><code>
 FTransform Transform = HitBox->GetComponentTransform();
 FVector StartTranslation = CachedBoxTransform.GetTranslation();
 FVector EndTranslation = Transform.GetTranslation();
@@ -407,7 +399,7 @@ bTraceWasEnabled = bTraceEnabled;
                     </header>
                     <p>My game features a <b>Building</b> mechanic that allows the player to change the environment by building (destructable) objects. The build logic is located in a secondary state. 
                     </p>
-<pre><code>
+<pre class="prettyprint"><code class="language-cpp">
 ABbPlayerController* PC = Cast&lt;ABbPlayerController&gt;(Character->GetController());
 if (PC == nullptr)
 {

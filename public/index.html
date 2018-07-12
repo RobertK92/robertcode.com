@@ -8,12 +8,12 @@
 	<meta charset="utf-8" />
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-	<meta name="description" content="Your description">
+	<meta name="description" content="Robert Knoester - Portfolio">
 	<meta name="author" content="Robert Knoester">
 	<meta name="generator" content="Hugo 0.42.2" />
 	<title>Robert Knoester</title>
 	<!-- Stylesheets -->
-	
+	<link rel="icon" href="img/icon2.png">
 	<link rel="stylesheet" href="http://example.org/css/main.css"/>
 	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/github.min.css">
         
@@ -29,7 +29,6 @@
 	
 	<link rel="shortcut icon" type="image/x-icon" href="http://example.org/favicon.ico">
 	<link rel="icon" type="image/x-icon" href="http://example.org/favicon.ico">
-	
 
 	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -87,6 +86,7 @@
         background-image:url("img/ai/ai-home-banner.png");
         background-repeat: no-repeat;
         background-size: cover;
+        cursor: pointer;
     }
     .tiles article:nth-child(6n - 5):after
     {
@@ -94,21 +94,25 @@
         background-repeat: no-repeat;
         background-size: cover;
         opacity: 0.3;
+        cursor: pointer;
     }
     .tiles article:nth-child(6n - 4):before 
     {
         background-image:url("img/bs/bs-banner.png");
+        cursor: pointer;
     }
     .tiles article:nth-child(6n - 4):after
     {
         background-image:url("img/bs/bs-banner.png");
         opacity: 0.3;
+        cursor: pointer;
     }
     .tiles article:nth-child(6n - 3):before 
     {
         background-image:url("img/bb/bb-banner2.png");
         background-repeat: no-repeat;
         background-size: cover;
+        cursor: pointer;
     }
     .tiles article:nth-child(6n - 3):after
     {
@@ -116,12 +120,14 @@
         background-repeat: no-repeat;
         background-size: cover;
         opacity: 0.3;
+        cursor: pointer;
     }
     .tiles article:nth-child(6n - 2):before 
     {
         background-image:url("img/wst/wst-banner2.png");
         background-repeat: no-repeat;
         background-size: cover;
+        cursor: pointer;
     }
     .tiles article:nth-child(6n - 2):after
     {
@@ -129,12 +135,14 @@
         background-repeat: no-repeat;
         background-size: cover;
         opacity: 0.3;
+        cursor: pointer;
     }
     .tiles article:nth-child(6n - 1):before 
     {
         background-image:url("img/nge/nge-graph.png");
         background-repeat: no-repeat;
         background-size: cover;
+        cursor: pointer;
     }
     .tiles article:nth-child(6n - 1):after
     {
@@ -142,12 +150,14 @@
         background-repeat: no-repeat;
         background-size: cover;
         opacity: 0.3;
+        cursor: pointer;
     }
     .tiles article:nth-child(6n - 0):before 
     {
         background-image:url("img/ss/ss-banner2.png");
         background-repeat: no-repeat;
         background-size: cover;
+        cursor: pointer;
     }
     .tiles article:nth-child(6n - 0):after
     {
@@ -155,16 +165,25 @@
         background-repeat: no-repeat;
         background-size: cover;
         opacity: 0.3;
+        cursor: pointer;
     }
     </style>			
     <!-- Header -->
+      
     <section id="one" class="tiles">
         
-        <article>
+        <article onclick="LoadAi()">
+            <script>
+            function LoadAi()
+                {
+                   window.open("/blogs/ai.html","_self") 
+                }
+            </script>
             <span class="image">
                 <img src="img/pic01.jpg" alt="" />
             </span>
-            <header class="major">
+            
+            <header class="major" style="cursor: pointer">
                 <h3><a href="blogs/ai.html" class="link">Artificial Intelligence</a></h3>
                 <p>- Goal oriented action planner (GOAP)</p>
                 <p>- Utility Theory</p>
@@ -174,11 +193,17 @@
             </header>
         </article>
         
-        <article>
+        <article onclick="LoadBs()">
+            <script>
+            function LoadBs()
+                {
+                   window.open("/blogs/boltstorm.html","_self") 
+                }
+            </script>
             <span class="image">
                 <img src="img/bs/bs-banner.png" alt="" />
             </span>
-            <header class="major">
+            <header class="major" style="cursor: pointer">
                 <h3><a href="blogs/boltstorm.html" class="link">Bolt Storm</a></h3>
                 <p>- Dungeon crawler RPG with RTS elements</p>
                 <p>- Item/Looting systems </p>
@@ -189,11 +214,17 @@
             </header>
         </article>
         
-        <article>
+        <article onclick="LoadMp()">
+            <script>
+            function LoadMp()
+                {
+                   window.open("/blogs/brawlergame.html","_self") 
+                }
+            </script>
             <span class="image">
                 <img src="img/pic03.jpg" alt="" />
             </span>
-            <header class="major">
+            <header class="major" style="cursor: pointer">
                 <h3><a href="blogs/brawlergame.html" class="link">Multiplayer Game</a></h3>
                 <p>- Multiplayer Brawler-Style Game</p>
                 <p>- Character State Machines</p>
@@ -203,11 +234,17 @@
             </header>
         </article>
         
-        <article>
+        <article onclick="LoadWinSearch()">
+            <script>
+            function LoadWinSearch()
+                {
+                   window.open("/blogs/winsearch.html","_self") 
+                }
+            </script>
             <span class="image">
                 <img src="img/pic03.jpg" alt="" />
             </span>
-            <header class="major">
+            <header class="major" style="cursor: pointer">
                 <h3><a href="blogs/winsearch.html" class="link">Windows Search Tool</a></h3>
                 <p>- windows search & launch tool inspired by OSX spotlight (fun side-project)</p>
                 <p>- Scan and cache compressed meta data of all drives</p>
@@ -218,11 +255,17 @@
             </header>
         </article>
         
-        <article>
+        <article onclick="LoadNGE()">
+            <script>
+            function LoadNGE()
+                {
+                   window.open("/blogs/nodegraph.html","_self") 
+                }
+            </script>
             <span class="image">
                 <img src="img/pic04.jpg" alt="" />
             </span>
-            <header class="major">
+            <header class="major" style="cursor: pointer">
                 <h3><a href="blogs/nodegraph.html" class="link">Node Graph Editor (Plugin)</a></h3>
                 <p>- Generic event-driven node editor</p>
                 <p>- Multipurpose tool</p>
@@ -232,11 +275,17 @@
             </header>
         </article>
         
-        <article>
+        <article onclick="LoadSticky()">
+            <script>
+            function LoadSticky()
+                {
+                   window.open("/blogs/sticky.html","_self") 
+                }
+            </script>
             <span class="image">
                 <img src="img/pic05.jpg" alt="" />
             </span>
-            <header class="major">
+            <header class="major" style="cursor: pointer">
                 <h3><a href="blogs/sticky.html" class="link">Sticky Studio's</a></h3>
                 <p>- Internship + Continued work</p>
                 <p>- Work done for big movie studio's</p>

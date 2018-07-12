@@ -30,14 +30,9 @@
 	<link rel="shortcut icon" type="image/x-icon" href="http://example.org/favicon.ico">
 	<link rel="icon" type="image/x-icon" href="http://example.org/favicon.ico">
 	
-<link rel="stylesheet"
-      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-        
-<link rel="stylesheet" href="/css/hljs-dracula.css">
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/languages/go.min.js"></script>
-<script>hljs.initHighlightingOnLoad();</script>
-        
+<script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+    <link rel="stylesheet" href="/css/code-theme.css">
+
         
 	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -91,7 +86,9 @@
                     <a href="https://www.indiedb.com/games/bolt-storm" title="View Bolt Storm on Indie DB"><img src="https://button.indiedb.com/popularity/medium/games/57407.png" alt="Bolt Storm"></a>
                     <a href="http://kualitygames.com/boltstorm/">Game Website URL</a>
                     <br> <br>
-                    <iframe width="854" height="480" src="https://www.youtube.com/embed/PeBGBjCstB8" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    <div style="position:relative;padding-top:50.0%;">
+                        <iframe src="https://www.youtube.com/embed/PeBGBjCstB8" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="position:absolute;top:0;left:0;width:89%;height:100%;"></iframe>
+                    </div>
                 </div>
             </section>
             <section id="two">
@@ -118,7 +115,7 @@
                     </p>
                     <p>From then on, the UI would consist of; <b>Windows</b>, <b>Popups</b>, <b> Tooltips</b> and one <b>HUD</b>. All of these exist on a stack (called the <b>WidgetStack</b>). I implemented a couple of rules: Windows can be created on top of windows but never on top of popups, popups can be created on top of anything same as tooltips. All of these inherit from a <b>UIObject</b> base class. 
                     </p>
-<pre><code>
+<pre class="prettyprint"><code>
 /**
 *	Creates a window and pushes it onto the widget stack
 *	@param aUIType The window type to create
@@ -157,7 +154,7 @@ UFUNCTION(BlueprintCallable, Category = "UI System|Manager")
 void PopUI(int32 aDepth = 1);
 </code></pre>
                     <p>The <b>UIManager</b> contains all functionality for creating and removing widgets and can be accessed globally. The UIManager contains functions for creating new windows, popups, tooltips and also a method called <b>PopUI</b> which is the only valid way to remove a UIObject. These methods ensure that new UI is always created 1 layer on top of the top widget (and becomes the top widget). The Pop method will pop an x amount of widgets from the stack with a given depth. Transition animations will consistently occur when a UIObject is added or popped. The HUD is always the last widget on the stack and cannot be popped (only hidden).</p>
-<pre><code>
+<pre class="prettyprint"><code>
 void ABsUIManager::PopUI(int32 aDepth)
 {
 	for (int i = 0; i &lt; aDepth; i++)
