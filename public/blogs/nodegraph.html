@@ -1,0 +1,287 @@
+<html>
+    
+    <head>
+    <meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<meta name="description" content="Your description">
+	<meta name="author" content="Robert Knoester">
+	<meta name="generator" content="Hugo 0.42.2" />
+    <title>Robert Knoester - AI</title>
+    
+	<!-- Stylesheets -->
+
+   
+        
+	<link rel="stylesheet" href="http://example.org/css/main.css"/>
+	
+    
+        
+	<!--[if lte IE 8]><script src="js/ie/html5shiv.js"></script><![endif]-->
+    <link rel="stylesheet" href="../css/main.css" />
+    <!--[if lte IE 9]><link rel="stylesheet" href="css/ie9.css" /><![endif]-->
+    <!--[if lte IE 8]><link rel="stylesheet" href="css/ie8.css" /><![endif]-->
+
+
+	<!-- Custom Fonts -->
+	<link href="http://example.org/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="shortcut icon" type="image/x-icon" href="http://example.org/favicon.ico">
+	<link rel="icon" type="image/x-icon" href="http://example.org/favicon.ico">
+	
+<link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        
+<link rel="stylesheet" href="/css/hljs-dracula.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/languages/go.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        
+        
+	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
+	<script src="js/ie/html5shiv.js"></script>
+	<script src="js/ie/html5shiv.jsrespond.min.js"></script>
+	<![endif]-->
+    </head>
+    <body>
+        
+        <div id="wrapper">
+
+			<!-- Header -->
+            <header id="header" class="alt">
+                <strong>&nbsp; Node Graph Editor</strong>
+            </header>
+            
+        </div>
+        
+        <style>
+            #blogpost-banner
+            {
+                
+                background-image: url(../img/nge/nge-graph.png);
+                position: relative;
+                height: 75vh;
+                background-size: cover;
+                display: flex;
+                -moz-align-items: center;
+		        -webkit-align-items: center;
+		        -ms-align-items: center;
+                align-items: center;
+                width: 100%;
+                opacity: 0.70;
+            }
+        </style>
+        
+        <section id="blogpost-banner" class="major">
+            
+        </section>
+        
+        <div id="main">
+            <section id="two">
+                <div class="inner">
+                    <header class="major">
+                        <h2>The Project</h2>
+                    </header>
+                    <p>I initially wrote this plugin to easily manage the flow of UI screens for a game we were working on at university, but it in essence, it is just a generic node graph editor that can be used for all sorts of purposes. The basic idea is that the user can create nodes and on those nodes, the user can create any number of events that can be hooked up to other nodes.
+                    </p>
+                    <video width="700" height="400" controls>
+                        <source src="../img/nge/nodegrapheditor.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </section>
+            <section id="two">
+                <div class="inner">
+                    <header class="major">
+                        <h2>Generation</h2>
+                    </header>
+                    <p>When a graph is saved, the system creates a xml file to save the layout of the graph and a C# file that contains generated enums of node connections and some utility methods.
+                    </p>
+                    <p>All the code shown below is generated.
+                    </p>
+<pre><code>public class UIFlowGraph : Singleton&lt;UIFlowGraph&gt;
+{
+    public enum NodeId
+    {
+        DefaultNode,
+        MenuScreen,
+        GameHUD,
+        OptionsScreen,
+        CreditsScreen,
+        GameplayOptionsScreen,
+        GraphicsOptionsScreen,
+        AudioOptionsScreen
+    }
+    public enum DefaultNode_NodeEventId
+    {
+        OnBack = 0,
+        OnBegin = 1
+    }
+    public enum MenuScreen_NodeEventId
+    {
+        OnBack = 0,
+        OnPlay = 2,
+        OnSelectOptions = 3,
+        OnSelectCredits = 4
+    }
+    public enum GameHUD_NodeEventId
+    {
+        OnBack = 0
+    }
+    public enum OptionsScreen_NodeEventId
+    {
+        OnBack = 0,
+        OnSelectGameplay = 5,
+        OnSelectGraphics = 6,
+        OnSelectAudio = 7
+    }
+    public enum CreditsScreen_NodeEventId
+    {
+        OnBack = 0
+    }
+    public enum GameplayOptionsScreen_NodeEventId
+    {
+        OnBack = 0
+    }
+    public enum GraphicsOptionsScreen_NodeEventId
+    {
+        OnBack = 0
+    }
+    public enum AudioOptionsScreen_NodeEventId
+    {
+        OnBack = 0
+    }
+    public enum NodeEventId
+    {
+        OnBack = 0,
+        OnBegin = 1,
+        OnPlay = 2,
+        OnSelectOptions = 3,
+        OnSelectCredits = 4,
+        OnSelectGameplay = 5,
+        OnSelectGraphics = 6,
+        OnSelectAudio = 7
+    }
+    public event System.Action&lt;NodeId&gt; OnFired = delegate { };
+
+    public NodeId m_Current;
+    public Stack&lt;NodeId&gt; m_BackTrack = new Stack&lt;NodeId&gt;();
+
+
+    private void Awake()
+    {
+        DontDestroyOnLoad(gameObject);
+    }
+
+    private void PushPrevious(NodeId node)
+    {
+        m_BackTrack.Push(m_Current);
+        m_Current = node;
+    }
+
+    public void NextNode(NodeEventId ev)
+    {
+        switch(ev)
+        {
+            case NodeEventId.OnBegin:
+                PushPrevious(NodeId.MenuScreen);
+                OnFired(NodeId.MenuScreen);
+                break;
+            case NodeEventId.OnPlay:
+                PushPrevious(NodeId.GameHUD);
+                OnFired(NodeId.GameHUD);
+                break;
+            case NodeEventId.OnSelectOptions:
+                PushPrevious(NodeId.OptionsScreen);
+                OnFired(NodeId.OptionsScreen);
+                break;
+            case NodeEventId.OnSelectCredits:
+                PushPrevious(NodeId.CreditsScreen);
+                OnFired(NodeId.CreditsScreen);
+                break;
+            case NodeEventId.OnSelectGameplay:
+                PushPrevious(NodeId.GameplayOptionsScreen);
+                OnFired(NodeId.GameplayOptionsScreen);
+                break;
+            case NodeEventId.OnSelectGraphics:
+                PushPrevious(NodeId.GraphicsOptionsScreen);
+                OnFired(NodeId.GraphicsOptionsScreen);
+                break;
+            case NodeEventId.OnSelectAudio:
+                PushPrevious(NodeId.AudioOptionsScreen);
+                OnFired(NodeId.AudioOptionsScreen);
+                break;
+        }
+    }
+    public void PreviousNode()
+    {
+        if(m_BackTrack.Count > 0)
+        {
+            NodeId popped = m_BackTrack.Pop();
+            m_Current = popped;
+            OnFired(popped);
+        }
+    }
+}
+</code></pre>
+                    <p>This singleton can easily be used to transition between states. The state machine will always begin on the turqouise “DefaultNode”, so only OnBegin is available to be fired initially.
+                    </p>
+<pre><code>UIFlowGraph.Instance.OnFired += OnNodeFired;
+UIFlowGraph.Instance.NextNode(UIFlowGraph.NodeEventId.OnBegin);
+</code></pre>
+                    <p>Because I designed the system to be as generic as possible, it is not directly tied to UI. The user must determine what happens in the OnFired event handler as shown below.
+                    </p>
+<pre><code>private void OnNodeFired(UIFlowGraph.NodeId screenId)
+{
+    UIScreen screen = m_Screens.Where(x => x.m_ScreenId == screenId).FirstOrDefault();
+    if (screen == null)
+    {
+        // Screen not found, popping it off the backtrack stack
+        if (UIFlowGraph.Instance.m_BackTrack.Count > 0)
+        {
+            UIFlowGraph.NodeId popped = UIFlowGraph.Instance.m_BackTrack.Pop();
+            UIFlowGraph.Instance.m_Current = popped;
+        }
+        return;
+    }
+    m_Screens.ForEach(x => x.gameObject.SetActive(false));
+    screen.gameObject.SetActive(true);
+}
+</code></pre>
+                    <p>I created some handy utility components for firing events. The image below shows the UI Event Button which automatically detects what state (node) is currently active and shows the available outgoing connections that match that node. When the button is pressed, the selected event will be fired (in this case when clicking options, OnSelectOptions is fired and the options screen is enabled). Note how the component shows you what state is currently active (MenuScreen).
+                    </p>
+                    <img src="../img/nge/nge-button-event.png"> <br> <br>
+                    <p>In my case, I used my node graph editor to manage the flow of my UI, but it can also be used for things like A.I. or other things that benefit from a state machine.
+                    </p>
+                </div>
+            </section>
+        </div>
+        
+<!-- Collpasible js -->    
+<script>
+var coll = document.getElementsByClassName("collapsible");
+var i;
+
+for (i = 0; i < coll.length; i++) 
+{
+    coll[i].addEventListener("click", function() 
+    {
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        if (content.style.display === "block") 
+        {
+            content.style.display = "none";
+        } 
+        else 
+        {
+            content.style.display = "block";
+        }
+        
+    });
+}
+</script>
+        
+    </body>
+</html>

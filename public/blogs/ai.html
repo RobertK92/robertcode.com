@@ -99,7 +99,6 @@
 
                     <p>In the code below you can see that boarding the plane requires certain other actions: (!HasBoardedPlane, HasCheckedIn and HasSecurityCheck).</p>
                     
-<button class="collapsible">Code Snippet</button>
 <pre><code>public class BoardPlaneAction : GoapAction
 {
     public override int Cost { get { return 10; } }
@@ -152,81 +151,7 @@
 <p>Available actions:</p>
 
 <p><img src="../img/ai/goapActions.png" alt="Image_ActionScriptList" /></p>
-
-<p>The code below shows how the planner creates a plan. It first builds a graph (or tree) recursively. It will all the paths that lead to the target goal (action).
-Once the graph is build, the nodes (which contain the actions) can be traversed back (using cost) to find the most efficient way of reaching the target action.</p>
-
-<button class="collapsible">Code Snippet</button>
-<pre><code>/// &lt;summary&gt;
-/// Creates a plan of actions for a specified goal. Returns true if a plan was found.
-/// &lt;/summary&gt;
-/// &lt;param name="currentState">The current state of the agent.&lt;/param&gt;
-/// &lt;param name="airportState">The current state of the airport.&lt;/param&gt;
-/// &lt;param name="actionOutput"&gt;Ouputs the plan of actions for the specified goal. Should be empty&lt;/param&gt;
-/// &lt;param name="goals"&gt;The end goals of the plan.&lt;/param&gt;
-/// &lt;returns&gt;Returns true if a plan was found.&lt;/returns&gt;
-public bool MakePlan(GoapAgent agent, Stack&lt;GoapAction&gt; actionOutput, GoapGoal[] goals)
-{
-    var node = new Node(null, agent.State, null, 0);
-    var leaves = new List&lt;Node&gt;();
-    var actions = _availableActions.ToList();
-    foreach (var action in actions) action.Reset();
-
-    var foundPlan = BuildGraph(node, leaves, actions, goals);
-    if (!foundPlan) return false;
-
-    var n = leaves.Aggregate((Node)null, (acc, item) => acc == null || acc.cost > item.cost ? item : acc);
-    while (n != null)
-    {
-        if (n.action != null)
-            actionOutput.Push(n.action);
-
-        n = n.parent;
-    }
-
-    return true;
-}
-
-/// &lt;summary&gt;
-/// Creates all available plans for the specified goals.
-/// &lt;/summary&gt;
-/// &lt;param name="parent"&gt;The parent node.&lt;/param&gt;
-/// &lt;param name="leaves"&gt;A list with all possible plans. Should be empty when passed.&lt;/param&gt;
-/// &lt;param name="availableActions"&gt;All the available actions.&lt;/param&gt;
-/// &lt;param name="goals"&gt;The goals of the plan.&lt;/param&gt;
-/// &lt;returns&gt;&lt;/returns&gt;
-private bool BuildGraph(Node parent, List&lt;Node&gt; leaves, List&lt;GoapAction&gt; availableActions, GoapGoal[] goals)
-{
-    bool success = false;
-
-    foreach (var action in availableActions)
-    {
-        if (action.Preconditions.All(x => x(parent.state)))
-        {
-            var actionState = new GoapState();
-            action.ChangeState(actionState);
-            var affectedState = actionState.MergeState(parent.state);
-            var node = new Node(parent, affectedState, action, parent.cost + action.Cost);
-
-            if (goals.All(x => x(affectedState)))
-            {
-                leaves.Add(node);
-                success = true;
-            }
-            else
-            {
-                var actions = new List&lt;GoapAction&gt;(availableActions.Where(x => x != action));
-                if (BuildGraph(node, leaves, actions, goals))
-                    success = true;
-            }
-        }
-    }
-
-    return success;
-}</code></pre>
                     
-
-
 <h2 id="utility-theory">Utility Theory</h2>
 
 <p>Utility Theory is basically a concept that determines how important an action is for a particular agent at a certain time.
@@ -238,7 +163,6 @@ So Utility Theory determines what action needs to be done, while the GOAP determ
 
 <p>This agent has 5 different utilities (trail-actions that it can find important). With a trail-action I mean a pre-determined &ldquo;goal&rdquo; that can have preconditions but is essentially an end-goal instead of a substep. (e.g. the agents wants to board the plane, checking-in and going through customs is not what he wants, it something he has to do to reach the goal).</p>
 
-<button class="collapsible">Code Snippet</button>
 <pre><code>public enum LongTermGoal
 {
     None,
@@ -251,7 +175,6 @@ So Utility Theory determines what action needs to be done, while the GOAP determ
 
 <p>The Utility Agent will notify the Goap Agent when a new goal has been assigned, the planner can then re-calculate the plan.</p>
 
-<button class="collapsible">Code Snippet</button>
 <pre><code>private void OnLongTermGoalHasChanged(LongTermGoal goal)
 {
     switch (goal)

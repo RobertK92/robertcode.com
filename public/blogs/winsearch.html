@@ -1,0 +1,313 @@
+<html>
+    
+    <head>
+    <meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<meta name="description" content="Your description">
+	<meta name="author" content="Robert Knoester">
+	<meta name="generator" content="Hugo 0.42.2" />
+    <title>Robert Knoester - AI</title>
+    
+	<!-- Stylesheets -->
+
+   
+        
+	<link rel="stylesheet" href="http://example.org/css/main.css"/>
+	
+    
+        
+	<!--[if lte IE 8]><script src="js/ie/html5shiv.js"></script><![endif]-->
+    <link rel="stylesheet" href="../css/main.css" />
+    <!--[if lte IE 9]><link rel="stylesheet" href="css/ie9.css" /><![endif]-->
+    <!--[if lte IE 8]><link rel="stylesheet" href="css/ie8.css" /><![endif]-->
+
+
+	<!-- Custom Fonts -->
+	<link href="http://example.org/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="shortcut icon" type="image/x-icon" href="http://example.org/favicon.ico">
+	<link rel="icon" type="image/x-icon" href="http://example.org/favicon.ico">
+	
+<link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        
+<link rel="stylesheet" href="/css/hljs-dracula.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/languages/go.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+        
+        
+	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
+	<script src="js/ie/html5shiv.js"></script>
+	<script src="js/ie/html5shiv.jsrespond.min.js"></script>
+	<![endif]-->
+    </head>
+    <body>
+        
+        <div id="wrapper">
+
+			<!-- Header -->
+            <header id="header" class="alt">
+                <strong>&nbsp; Windows Search Tool</strong>
+            </header>
+            
+        </div>
+        
+        <style>
+            #blogpost-banner
+            {
+                
+                background-image: url(../img/wst/wst-banner.png);
+                position: relative;
+                height: 75vh;
+                background-size: cover;
+                display: flex;
+                -moz-align-items: center;
+		        -webkit-align-items: center;
+		        -ms-align-items: center;
+                align-items: center;
+                width: 100%;
+                opacity: 0.70;
+            }
+        </style>
+        
+        <section id="blogpost-banner" class="major">
+            
+        </section>
+        
+        <div id="main">
+            <section id="two">
+                <div class="inner">
+                    <header class="major">
+                        <h2>The Project</h2>
+                    </header>
+                    <p>I wanted to make  tool that could find any file or folder on any of my drives. The windows built-in search is terrible at doing this, it only finds a fraction of the files. For this project I decided to use C# as a language and WPF for the UI. I use global keyboard hooks so the window can be shown at any time using the Ctrl+Space hotkey (can be changed in prefs).
+                    </p>
+                    <video width="800" height="400" controls>
+                        <source src="../img/wst/wst-video.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </section>
+            <section id="two">
+                <div class="inner">
+                    <header class="major">
+                        <h2>Scanning</h2>
+                    </header>
+                    <p>The heaviest part of this tool is the initial scanning of the drives. This happens when the program launches or when given the /scan command. It takes about 5 - 30 seconds depending on the size and amount of drives. For my system it took 16 seconds to do a full scan of my drives shown below.
+                    </p>    
+                    <img src="../img/wst/wst-disks.png"> <br><br>
+                    <p>The scan code runs on a seperate thread so we don't freeze the main thread and the UI. The drives are then enumerated and scanned in parallel as well.
+                    </p>
+<pre><code>
+protected override void OnScan()
+{
+    recDepth = 0;
+    BackgroundWorker worker = new BackgroundWorker();
+    Stopwatch timer = Stopwatch.StartNew();
+    worker.DoWork += (sender, args) =>
+    {
+        DriveInfo[] drives = DriveInfo.GetDrives();
+        IEnumerable&lt;DriveInfo&gt; readyDrives = drives.Where(x => x.IsReady);
+        Log.Message(string.Format("{0} ready drives detected", readyDrives.Count()));
+
+        Parallel.ForEach(readyDrives, (DriveInfo drive) =>
+        {
+            Log.Message(string.Format("Scanning drive {0}: [{1}] ASync...", drive.VolumeLabel, drive.Name));
+            SystemQueryResultItem result = new SystemQueryResultItem(drive.Name);
+            AddItem(result);
+            ScanSubDirsAndFiles(drive.RootDirectory, true);
+        });
+    };
+
+    worker.RunWorkerCompleted += (sender, args) => 
+    {
+        SortBigList();
+        ScanComplete();
+        Log.Success(string.Format("{0} scan completed in {1} seconds", GetType().Name, timer.Elapsed.TotalSeconds.ToString("F3")));
+        GC.Collect();
+        Log.ReportMemoryUsage();
+        Console.Beep();
+    };
+
+    worker.RunWorkerAsync();
+}
+</code></pre>
+                    <p>The root directory of the drive is passed to the ScanSubDirsAndFiles function which is recursive and attempts to scan the drives in parallel aswell.
+                    </p>
+<pre><code>
+private void ScanSubDirsAndFiles(DirectoryInfo parentDir, bool isRoot = false)
+{
+    try
+    {
+        IEnumerable&lt;DirectoryInfo&gt; dirs = parentDir.EnumerateDirectories();
+        IEnumerable&lt;FileInfo&gt; files = parentDir.EnumerateFiles();
+
+        // Root folders are filtered and scanned in parallel.
+        if (isRoot)
+        {
+            dirs = dirs.Where(x => !RootIgnorePaths.Contains(x.FullName));
+            Parallel.ForEach(dirs, (DirectoryInfo dir) =>
+            {
+                ScanSubDirsAndFiles(dir);
+                SystemQueryResultItem result = new SystemQueryResultItem(dir.FullName);
+                AddItem(result);
+            });
+        }
+        else
+        {
+            foreach (DirectoryInfo dir in dirs)
+            {
+                ScanSubDirsAndFiles(dir);
+                SystemQueryResultItem result = new SystemQueryResultItem(dir.FullName);
+                AddItem(result);
+            }
+        }
+
+        // Scan files.
+        foreach (FileInfo file in files)
+        {
+            SystemQueryResultItem result = new SystemQueryResultItem(file.FullName);
+            AddItem(result);
+        }
+    }
+    catch (Exception e)
+    {
+        Log.Warning(e.Message);
+    }
+}
+</code></pre>
+                    
+                </div>
+            </section>
+            <section id="two">
+                <div class="inner">
+                    <header class="major">
+                        <h2>Querying</h2>
+                    </header>
+                    <p>In order to keep memory usage low but still cache all the meta data so the search results are near-instant, I use UTF8 encoding and store the byte[] of a path. This takes up significantly less memory than storing strings and the byte[] can easily be converted back to a string when necesery.
+                    </p>
+                    <p>When a search query is performed by the user (he or she types characters in the text box), the following code will run.
+                    </p>
+<pre><code>
+protected override void OnQuery(string query)
+{
+    if (IsScanning)
+        return;
+
+    string lowerCaseQuery = query.ToLower();
+    int closestIndex = -1;
+
+    if(_queryWorker.IsBusy)
+    {
+        _queryWorker.CancelAsync();
+        _queryWorker.Dispose();
+        _queryWorker = new BackgroundWorker();
+        _queryWorker.WorkerSupportsCancellation = true;
+    }
+
+    _queryWorker.DoWork += (sender, args) =>
+    {
+        closestIndex = FindClosestResultIndex(lowerCaseQuery); // heavy CPU
+    };
+    _queryWorker.RunWorkerCompleted += (sender, args) =>
+    {
+        if (closestIndex != -1)
+        {
+            UIResults results = new UIResults();
+            Log.Message(string.Format("Last query result: {0}", Path.GetFileName(BigResultList[closestIndex].GetPathString())));
+            for (int i = 0; i &lt; MaxResultsShown; i++)
+            {
+                int index = (closestIndex + i);
+                if (index &lt; BigResultList.Count && index > 0)
+                {
+                    string path = BigResultList[index].GetPathString();
+                    string file = Path.GetFileName(path);
+                    UIResultItem uiItem = new UIResultItem(true, file, path);
+                    results.Add(uiItem);
+                }
+            }
+
+            ShowResults(results, lowerCaseQuery);
+            QueryEnd(results, query);
+        }
+        else
+        {
+            QueryEnd(null, query);
+        }
+    };
+    _queryWorker.RunWorkerAsync();
+}
+</code></pre>
+                    <p>The FindClosestResultIndex method is what does all the work here. It will recursively try to find the index in the BigResultList that matches closest to the given search query. It will give results while typing, so even when only a couple of characters are typed in, it will usually output a list of good results.
+                    </p>
+<pre><code>
+private int FindClosestResultIndex(string query, int startIndex = 0, int substringLength = 1, int closest = -1)
+{
+    if (substringLength > query.Length)
+        return closest;
+
+    string querySubString = query.Substring(0, substringLength);
+    for (int i = startIndex; i &lt; BigResultList.Count; i++)
+    {
+        string name = Path.GetFileName(BigResultList[i].GetPathString()).ToLower();
+        if (substringLength &lt; name.Length)
+        {
+            if (name.Substring(0, substringLength) == querySubString)
+            {
+                closest = i;
+                startIndex = i;
+                substringLength++;
+                return FindClosestResultIndex(query, startIndex, substringLength, closest);
+            }
+        }
+    }
+    substringLength++;
+    return FindClosestResultIndex(query, startIndex, substringLength, closest);
+}
+</code></pre>
+                </div>
+            </section>
+            <section id="two">
+                <div class="inner">
+                    <header class="major">
+                        <h2>Other Features</h2>
+                    </header>
+                    <p>I have abstracted the querying away using the <b>QueryHandler</b> base class. It contains virtual methods for implementing different types of query handlers. For searching the file system it uses the <b>SystemQueryHandler</b> but I also implemented something called the <b>CommandQueryHandler</b> which will be run when prefixing a '/'.
+                    </p>
+                    <img src="../img/wst/wst-cmd.png"> <br> <br>
+                    <p>I was also planning on making a <b>WebQueryHandler</b> to search the internet when prefixing a '@'. However I froze the development of this project because of a lack of time. Perhaps I will continue working on it in the future.
+                    </p>
+                </div>
+            </section>
+        </div>
+        
+<!-- Collpasible js -->    
+<script>
+var coll = document.getElementsByClassName("collapsible");
+var i;
+
+for (i = 0; i < coll.length; i++) 
+{
+    coll[i].addEventListener("click", function() 
+    {
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        if (content.style.display === "block") 
+        {
+            content.style.display = "none";
+        } 
+        else 
+        {
+            content.style.display = "block";
+        }
+        
+    });
+}
+</script>
+        
+    </body>
+</html>
