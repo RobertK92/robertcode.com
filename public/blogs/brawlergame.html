@@ -91,93 +91,204 @@
                     </header>
                     <p>In my game, one of the players will be the listen server while the others are clients. I have created a <b>Network</b> class which will manage everything related to sessions. I have split the logic that is situation dependant into another abstract class called a <b>NetworkEventSequence</b>. For finding a match I inherit from that class and called the new class <b>MatchFinder</b>. This class will run the following network sequence: Find sessions -> Make an x amount of attempts to join the session -> If fails -> Try next session until last session. When no sessions are found, a new one will be created and can be joined by other players. The matchfinder class will use the methods in the network class to create this sequence. I split this functionality up because I imagined I would need other ways of joining sessions in the future (e.g. directly from a friend's list). To recap: the Network contains very generic helper methods and the different network event sequences determine how these methods are called.
                     </p>
-                    <p>Example of a Network method:
+                    <p>The Network:
                     </p>
 <pre class="prettyprint"><code>
-void UBbNetwork::FindSessions()
-{
-	check(NetworkEventSequence);
-	IncrementPendingOperations();
-	
-	/* Bind find sessions delegate and FindSessions */
-	IOnlineSubsystem* Sub = IOnlineSubsystem::Get();
-	if(Sub)
-	{
-		auto Sessions = Sub->GetSessionInterface();
-		if(Sessions.IsValid())
-		{
-			OnFindSessionsCompleteDelegate_Handle = Sessions->AddOnFindSessionsCompleteDelegate_Handle(OnFindSessionsCompleteDelegate);
-			
-			NetworkEventSequence->SearchObject = MakeShareable(new FOnlineSessionSearch);
-			NetworkEventSequence->SearchObject->MaxSearchResults = NetworkDatabase->MaxNumSearchResults;
-			NetworkEventSequence->SearchObject->bIsLanQuery = NetworkDatabase->bUseLAN;
-			NetworkEventSequence->SearchObject->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
-			
-			Sessions->FindSessions(*NetworkEventSequence->GetPlayerController()->PlayerState->UniqueId.GetUniqueNetId(), NetworkEventSequence->SearchObject.ToSharedRef());
-			return;
-		}
-		else
-		{
-			throwError("Sessions not supported by OnlineSubsystem");
-		}
-	}
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnNetworkEventSequenceStarted);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnNetworkEventSequenceCompleted);
 
-	NetworkEventSequence->OnFindSessionsComplete(false);
-	DecrementPendingOperations();
-}
+class APlayerController;
+class UBbNetworkDatabase;
+class UBbDebugDatabase;
+class UBbNetworkEventSequence;
+
+UENUM(BlueprintType)
+enum class EBbNetworkLogType : uint8
+{
+	NLT_Info	UMETA(DisplayName = "Info"),
+	NLT_Error	UMETA(DisplayName = "Error")
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNetworkLog, FString, Message, EBbNetworkLogType, LogType);
+
+class BITBLITZ_API UBbNetwork : public UObject
+{
+	GENERATED_BODY()
+public:
+	UBbNetwork(const FObjectInitializer& ObjectInitializer);
+	void Init();
+
+public:
+	/**	
+	*	Entry call for all network related functionality
+	*	@param NetworkEventSequenceClass The class used for determining what the network should do
+	*	@param PlayerController The player controller passed to the network event sequence to be used for the session operations
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Networking")
+	void RunNetworkEventSequence(TSubclassOf&lt;UBbNetworkEventSequence&gt; NetworkEventSequenceClass, APlayerController* PlayerController);
+
+	UFUNCTION(BlueprintPure, Category = "Networking")
+	UBbNetworkEventSequence* GetCurrentNetworkEventSequence() const;
+
+	UFUNCTION(BlueprintPure, Category = "Networking")
+	bool IsRunning() const;
+
+private:
+	void IncrementPendingOperations();
+	void DecrementPendingOperations();
+
+	//////////////////////////////////////////////////////////////////////////
+	// Finding sessions
+	//////////////////////////////////////////////////////////////////////////
+public:
+	/**
+	*	Attempts to find existing sessions
+	*/
+	void FindSessions();
+private:
+	UFUNCTION()
+	void OnFindSessionsComplete(bool bWasSuccess);
+
+public:
+	void CancelFindSessions();
+
+private:
+	UFUNCTION()
+	void OnCancelFindSessionsComplete(bool bWasSuccess);
+
+	//////////////////////////////////////////////////////////////////////////
+	// Creating/Starting sessions
+	//////////////////////////////////////////////////////////////////////////
+public:
+	/**
+	*	Attempts to create a new session
+	*/
+	void CreateSession();
+	int32 GetCreateSessionAttempt() const;
+
+private:
+	UFUNCTION()
+	void OnCreateSessionComlete(FName SessionName, bool bWasSuccess);
+	UFUNCTION()
+	void OnStartSessionComplete(FName SessionName, bool bWasSuccess);
+
+	//////////////////////////////////////////////////////////////////////////
+	// Joining sessions
+	//////////////////////////////////////////////////////////////////////////
+public:
+	/**
+	*	Attempts to join the session
+	*	@param SearchResult the result used to determine which session to join
+	*/
+	void JoinSession(const FOnlineSessionSearchResult& SearchResult);
+	int32 GetJoinSessionAttempt() const;
+private:
+	void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
+
+	//////////////////////////////////////////////////////////////////////////
+	// Destroying sessions
+	//////////////////////////////////////////////////////////////////////////
+public:
+	/**
+	*	Attempts to destroy the session the given player controller owns
+	*/
+	void DestroySession();
+
+	/**
+	*	Attempts to destroy the session of given SessionName
+	*	@param SessionName Name of the session to destroy
+	*/
+	void DestroySessionByName(FName SessionName);
+private:
+	void OnDestroySessionComplete(FName SessionName, bool bWasSuccess);
+
+public:
+	UPROPERTY(BlueprintAssignable, Category = "Networking")
+	FOnNetworkEventSequenceCompleted OnNetworkEventSequenceCompleted;
+
+	UPROPERTY(BlueprintAssignable, Category = "Networking")
+	FOnNetworkEventSequenceStarted OnNetworkEventSequenceStarted;
+
+	UPROPERTY(BlueprintAssignable, Category = "Networking")
+	FOnNetworkLog OnNetworkLog;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Networking")
+	bool bIsAborting;
+
+private:
+	UPROPERTY()
+	int32 CreateSessionAttemptCount;
+
+	UPROPERTY()
+	int32 JoinSessionAttemptCount;
+
+	int32 PendingOperations;
+
+	UPROPERTY()
+	UBbNetworkEventSequence* NetworkEventSequence;
+
+	UBbNetworkDatabase* NetworkDatabase;
+	UBbDebugDatabase* DebugDatabase;
+
+	FOnDestroySessionCompleteDelegate OnDestroySessionCompleteDelegate;
+	FOnFindSessionsCompleteDelegate OnFindSessionsCompleteDelegate;
+	FOnCancelFindSessionsCompleteDelegate OnCancelFindSessionsCompleteDelegate;
+	FOnCreateSessionCompleteDelegate OnCreateSessionCompleteDelegate;
+	FOnStartSessionCompleteDelegate OnStartSessionCompleteDelegate;
+	FOnJoinSessionCompleteDelegate OnJoinSessionCompleteDelegate;
+
+	FDelegateHandle OnCancelFindSessionsCompleteDelegate_Handle;
+	FDelegateHandle OnFindSessionsCompleteDelegate_Handle;
+	FDelegateHandle OnCreateSessionCompleteDelegate_Handle;
+	FDelegateHandle OnStartSessionCompleteDelegate_Handle;
+	FDelegateHandle OnJoinSessionCompleteDelegate_Handle;
+	FDelegateHandle OnDestroySessionCompleteDelegate_Handle;
+};
 </code></pre>
-                    <p>Example of a MatchFinder method:</p>
+                    <p>Network Event Sequence base class:</p>
 <pre class="prettyprint"><code>
-void UBbMatchFinder::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
+class UBbNetworkDatabase;
+class UBbNetwork;
+
+/**
+ * 
+ */
+UCLASS(Abstract)
+class BITBLITZ_API UBbNetworkEventSequence : public UObject
 {
-	IOnlineSubsystem* Sub = IOnlineSubsystem::Get();
-	if (Sub)
-	{
-		auto Sessions = Sub->GetSessionInterface();
-		if (Sessions.IsValid())
-		{
-			bool bJoinFailed = false;
-			FString failReason;
-			if (Result != EOnJoinSessionCompleteResult::Success)
-			{
-				bJoinFailed = true;
-				failReason = Lex::ToString(Result);
-			}
-			
-			EOnlineSessionState::Type SessionState = Sessions->GetSessionState(SessionName);
-			if (SessionState != EOnlineSessionState::Pending)
-			{
-				bJoinFailed = true;
-				failReason = "game session is " + FString(EOnlineSessionState::ToString(SessionState));
-			}
+	GENERATED_BODY()
+	
+public:
+	void Init(UBbNetwork* ParamNetwork, APlayerController* ParamPlayerController);
+	
+	virtual void Run();
 
-			if (bJoinFailed)
-			{
-				Network->OnNetworkLog.Broadcast(FString::Printf(TEXT("Failed to join game session: "), *failReason), EBbNetworkLogType::NLT_Error);
-				
-				if (Network->GetJoinSessionAttempt() &lt;= NetworkDatabase->JoinSessionRetries)
-				{
-					/* Join first found match, for now... */
-					Network->OnNetworkLog.Broadcast(
-						FString::Printf(TEXT("Joining game session (retry %i): %s..."), Network->GetJoinSessionAttempt(), 
-							*SearchObject->SearchResults[0].Session.SessionInfo->ToDebugString()), EBbNetworkLogType::NLT_Info);
+	UFUNCTION(BlueprintCallable, Category = "Network Event Sequence")
+	virtual void Abort();
 
-					Network->JoinSession(SearchObject->SearchResults[0]);
-				}
-				return;
-			}
+	virtual void OnFindSessionsComplete(bool bWasSuccess);
+	virtual void OnStartSessionComplete(FName SessionName, bool bWasSuccess);
+	virtual void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
+	virtual void OnDestroySessionComplete(FName SessionName, bool bWasSuccess);
+	
+	/**
+	*	Returns the player controller currently used for the network  event sequence (can be nullptr)
+	*/
+	APlayerController* GetPlayerController() const;
+	
+public:
+	TSharedPtr&lt;FOnlineSessionSearch&gt; SearchObject;
 
-
-			FString ConnectString;
-			if (Sessions->GetResolvedConnectString(SessionName, ConnectString))
-			{
-				Network->OnNetworkLog.Broadcast(FString::Printf(TEXT("Join game session: '%s'"), *ConnectString), EBbNetworkLogType::NLT_Info);
-
-				PlayerController->ClientTravel(ConnectString, TRAVEL_Absolute);
-			}
-		}
-	}
-}
+protected:
+    UPROPERTY()
+	UBbNetworkDatabase* NetworkDatabase;
+    
+    UPROPERTY()
+	UBbNetwork* Network;
+    
+    UPROPERTY()
+	APlayerController* PlayerController;
+};
 </code></pre>
                     <p>A network event sequence can easily be run like this:
                     </p>
@@ -209,42 +320,111 @@ SecondaryStateMachine->RegisterState(UBbSecondaryShootState::StaticClass(), (uin
 SecondaryStateMachine->RegisterState(UBbSecondarySwingState::StaticClass(), (uint8)EBbSecondaryCharacterStateId::SCSI_Swing);
 SecondaryStateMachine->RegisterState(UBbSecondaryBuildState::StaticClass(), (uint8)EBbSecondaryCharacterStateId::SCSI_Build);
 </code></pre>
-                    <p>A state activation can be requested by calling TryActivateState:
+                    <p>The state machine:
                     </p>
 <pre class="prettyprint"><code>
-EBbActivateStateResult UBbCharacterStateMachine::TryActivateState(const uint8 StateId, bool bIgnoreTransitionRules /*=false*/)
+class BITBLITZ_API UBbCharacterStateMachine : public UActorComponent
 {
-	if (StateLockers.Num() > 0)
-	{
-		return EBbActivateStateResult::ASFR_StateIsLocked;
-	}
+	GENERATED_BODY()
 
-	bool bBlocked = false;
-	if (ActiveState)
-	{
-		if (ActiveStateId == StateId)
-		{
-			/* This is already the activate state, no need to continue */
-			return EBbActivateStateResult::ASFR_StateAlreadyActive;
-		}
+public:	
+	UBbCharacterStateMachine();
+
+protected:
+	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray&lt;FLifetimeProperty&gt;& OutLifetimeProps) const override;
+	virtual bool IsSupportedForNetworking() const override;
+
+public:	
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	UFUNCTION(BlueprintPure, Category = "Character|StateMachine")
+	uint8 GetActiveStateId() const;
+
+	UFUNCTION(BlueprintPure, Category = "Character|StateMachine")
+	UBbCharacterState* GetActiveState() const;
+
+	/**
+	*	Locks the state from transitioning
+	*	@param StateLocker The object that wants to lock the state transitions (used to identify what state locker to remove)
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Character|StateMachine")
+	void LockState(UObject* StateLocker);
+
+	/**
+	*	Removes the given StateUnlocker from the state locker array
+	*	State can transition when the StateLockers array is empty
+	*	@param StateUnlocker The object that wants to stop locking the state transitions
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Character|StateMachine")
+	bool UnlockState(UObject* StateUnlocker);
+
+	/**
+	*	Determines what state should be active initially 
+	*	And which state should be activated when a state is deactivates
+	*	@param StateId 
+	*/
+	void SetDefaultStateId(const uint8 StateId);
+
+private:
+	UFUNCTION()
+	void SetActiveStateId(const uint8 StateId);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void NotifySetActiveStateId_Server(const uint8 StateId);
+	void NotifySetActiveStateId_Server_Implementation(const uint8 StateId);
+	bool NotifySetActiveStateId_Server_Validate(const uint8 StateId);
+
+public:
+	/**
+	*	Checks if the activate state can transition to the given state
+	*	If so, the state will be activated
+	*	@param StateId the id of the state to activate
+	*	@param bIgnoreTransitionRules force activate the state regardless of transition rules (does not override state lockers)
+	*/
+	EBbActivateStateResult TryActivateState(const uint8 StateId, bool bIgnoreTransitionRules = false);
+
+	/**
+	*	Deactivates the given state if it is the activate state and activated the default state (0)
+	*	@param StateId The id of the state to deactivate
+	*/
+	void TryDeactivateState(const uint8 StateId);
+
+	/**
+	*	Registered the state and activates it if it is the default state
+	*	@param StateClass the class of the state (do not use the base class)
+	*	@param StateId the id this state should have
+	*/
+	void RegisterState(TSubclassOf&lt;UBbCharacterState&gt; StateClass, const uint8 StateId);
 	
-		if (!bIgnoreTransitionRules)
-		{
-			bBlocked = !CanTransitionTo(StateId);
-		}
-	}
+private:
+	bool CanTransitionTo(const uint8 StateId);
 
-	if (!bBlocked)
-	{
-		SetActiveStateId(StateId);
-	}
+private:
+	UPROPERTY(Replicated)
+	uint8 ActiveStateId;
 
-	if(bBlocked)
-	{
-		return EBbActivateStateResult::ASFR_StateWasBlocked;
-	}
-	return EBbActivateStateResult::ASFR_Success;
-}
+	UPROPERTY()
+	UBbCharacterState* ActiveState;
+
+	UPROPERTY()
+	TArray&lt;UObject*&gt; StateLockers;
+
+	UPROPERTY()
+	ABbCharacter* Character;
+
+	UPROPERTY()
+	UBbDebugDatabase* DebugDatabase;
+
+	UPROPERTY()
+	UBbCharacterDatabase* CharacterDatabase;
+
+	UPROPERTY()
+	TMap&lt;uint8, UBbCharacterState*&gt; RegisteredStates;
+
+	EBbStateMachineType StateMachineType;
+	uint8 DefaultStateId;
+};
 </code></pre>
                     <p>The CanTransitionTo method will check if the current state is eligble to transition to the given state. To make this a bit easier to visualize I have created a data asset where I can configure the <b>State Transition Rules</b>. To give an example: the character should not be allowed to go into the jump state while crouching or jumping.
                     </p>
@@ -449,6 +629,57 @@ if (bIsBuildKeyDown)
                     <p>The level maker is a seperate level that can be accessed by the player via the main menu. This allows players to create and share their own levels. The level are serialized to a JSON.  <i> This is still a work in progress so the image below shows a very early version. </i>
                     </p>
                     <img src="../img/bb/bb-level-maker.PNG" width="90%">
+                    <br><br>
+                    <p>Level loading by deserializing the JSON file:</p>
+<pre class="prettyprint"><code class="language-cpp">
+void UBbLevelMaker::LoadLevel(FString JsonString, FString LevelFile)
+{
+	UnloadCurrentLevel();
+
+	TSharedPtr&lt;FJsonObject&gt; OutJsonObject;
+	TSharedRef&lt;TJsonReader&lt;TCHAR&gt;&gt; JsonReader = TJsonReaderFactory&lt;TCHAR&gt;::Create(JsonString);
+
+	if (!FJsonSerializer::Deserialize&lt;TCHAR&gt;(JsonReader, OutJsonObject))
+	{
+		LM_FATAL_LEVEL_LOAD_ERROR();
+		return;
+	}
+
+	TMap&lt;FString, TSharedPtr&lt;FJsonValue&gt;&gt; ValueMap = OutJsonObject->Values;
+	for (auto JsonKvp : ValueMap)
+	{
+		if (JsonKvp.Key == LM_OBJECT_FIELD_OBJECTS)
+		{
+			TSharedPtr&lt;FJsonObject&gt; LevelObjectsSection = JsonKvp.Value->AsObject();
+			for (auto LevelObjectKvp : LevelObjectsSection->Values)
+			{
+				TSharedPtr&lt;FJsonObject&gt; LevelObjectJsonObj = LevelObjectKvp.Value->AsObject();
+				FString ClassString = LevelObjectJsonObj->GetStringField(LM_STRING_FIELD_CLASS);
+				FString TransformString = LevelObjectJsonObj->GetStringField(LM_STRING_FIELD_TRANSFORM);
+				EBbLevelObjectType ObjectType = (EBbLevelObjectType)((uint8)LevelObjectJsonObj->GetIntegerField(LM_INT_FIELD_OBJECT_TYPE));
+
+				FTransform SpawnTransform = FTransform::Identity;
+				if (!SpawnTransform.InitFromString(TransformString))
+				{
+					LM_FATAL_LEVEL_LOAD_ERROR();
+					break;
+				}
+				AActor* SpawnedActor = UBbLevelMakerUtils::SpawnLevelObjectFromString(this, ClassString, SpawnTransform, true);
+				if (!SpawnedActor)
+				{
+					LM_FATAL_LEVEL_LOAD_ERROR();
+					break;
+				}
+				Level.LevelContent[ObjectType].Array.Add(SpawnedActor);
+			}
+		}
+	}
+
+	FString FileName = FPaths::GetBaseFilename(LevelFile);
+	LoadedLevelName = FileName;
+	LoadedLevelFilePath = LevelFile;
+}
+</code></pre>
                 </div>
             </section>
         </div>
